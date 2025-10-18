@@ -45,13 +45,16 @@ export default function Navbar() {
                 About
               </Link>
               <Link href="/service" className="nav-item nav-link">
-                Service
+                Tours
               </Link>
-              <Link href="/blog" className="nav-item nav-link">
+              <Link href="/service" className="nav-item nav-link">
+                Destinations
+              </Link>
+              {/* <Link href="/blog" className="nav-item nav-link">
                 Blog
-              </Link>
+              </Link> */}
 
-              <div className="nav-item dropdown">
+              {/* <div className="nav-item dropdown">
                 <button
                   className="nav-link dropdown-toggle btn btn-link text-decoration-none"
                   data-bs-toggle="dropdown"
@@ -82,7 +85,7 @@ export default function Navbar() {
                     404 Page
                   </Link>
                 </div>
-              </div>
+              </div> */}
 
               <Link href="/contact" className="nav-item nav-link">
                 Contact
@@ -108,7 +111,7 @@ export default function Navbar() {
               href="#"
               className="btn btn-primary rounded-pill py-2 px-4 flex-shrink-0"
             >
-              Get Started
+              Get a quote
             </Link>
           </div>
         </nav>

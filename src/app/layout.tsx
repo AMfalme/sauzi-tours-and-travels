@@ -4,8 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "./components/Navbar";
 
 export const metadata = {
-  title: "WaterLand - Water Park Website Template",
-  description: "WaterLand - Water Park Website Template",
+  title: "Sauzi Tours and Travels",
+  description: "Sauzi Tours and Travels",
 };
 
 export default function RootLayout({

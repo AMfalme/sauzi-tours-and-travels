@@ -119,6 +119,7 @@
 .sticky-top .navbar-light .navbar-nav .nav-link {
     padding: 20px 0;
     color: var(--bs-dark);
+    text-transform: uppercase;
 }
 
 .navbar-light .navbar-nav .nav-link:hover,
@@ -926,6 +927,11 @@
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     background: var(--bs-dark);
 }
+
+/* **** example template */
+
+
+
 /*** copyright end ***/
 
 
