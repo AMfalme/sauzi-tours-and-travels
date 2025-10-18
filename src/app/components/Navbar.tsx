@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Navbar() {
   return (
@@ -6,7 +7,7 @@ export default function Navbar() {
       {/* Spinner Start */}
       <div
         id="spinner"
-        className=" bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
+        className="nav bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
       >
         <div
           className="spinner-border text-primary"
@@ -22,9 +23,14 @@ export default function Navbar() {
       <div className="container-fluid nav-bar sticky-top px-4 py-2 py-lg-0">
         <nav className="navbar navbar-expand-lg navbar-light">
           <Link href="/" className="navbar-brand p-0">
-            <h1 className="display-6 text-dark">
-              <i className="fas fa-swimmer text-primary me-3"></i>WaterLand
-            </h1>
+            <Image
+              className="img-fluid"
+              src="/images/typography.png"
+              alt=""
+              width={120}
+              height={100}
+              priority
+            />
           </Link>
 
           <button
