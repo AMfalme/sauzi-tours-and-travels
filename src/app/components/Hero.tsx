@@ -34,34 +34,18 @@ export default function HeroSection() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: true }}
-        className="w-full md:w-1/2 max-w-md space-y-6"
+        className="w-full md:w-1/2 max-w-md space-y-6 z-10"
       >
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight"
-        >
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
           Discover <span className="text-blue-600">Kenya</span> & Beyond
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="text-gray-600"
-        >
+        <p className="text-gray-600">
           Explore breathtaking safaris, coastal getaways, and cultural adventures with Sauzi Tours.
-        </motion.p>
+        </p>
 
-        <motion.form
+        <form
           onSubmit={handleSubmit}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.3, ease: "easeOut" }}
-          viewport={{ once: true }}
           className="bg-white rounded-2xl shadow-md p-6 space-y-4"
         >
           <div>
@@ -114,16 +98,16 @@ export default function HeroSection() {
           >
             Search Tours
           </motion.button>
-        </motion.form>
+        </form>
       </motion.div>
 
-      {/* RIGHT — Slide with Soft Fade Out */}
+      {/* RIGHT — Image Carousel */}
       <motion.div
         initial={{ opacity: 0, x: 60 }}
         whileInView={{ opacity: 1, x: 0 }}
         transition={{ duration: 1, ease: "easeOut" }}
         viewport={{ once: true }}
-        className="w-full md:w-1/2 mt-10 md:mt-0"
+        className="w-full md:w-1/2 mt-10 md:mt-0 relative overflow-hidden rounded-2xl"
       >
         <Swiper
           modules={[Autoplay, Pagination]}
@@ -131,10 +115,10 @@ export default function HeroSection() {
             delay: 6500,
             disableOnInteraction: false,
           }}
-          speed={2000}
+          speed={1200}
           pagination={{ clickable: true }}
           loop
-          className="hero-swiper rounded-2xl shadow-lg overflow-hidden"
+          className="hero-swiper rounded-2xl shadow-lg"
         >
           {["/images/simba.png", "/images/watermark.png"].map((src, index) => {
             const floatUp = index % 2 === 0;
@@ -143,19 +127,19 @@ export default function HeroSection() {
                 <motion.div
                   animate={{
                     y: floatUp ? [0, -20, 0] : [0, 20, 0],
-                    rotate: floatUp ? [0, -1.5, 0] : [0, 1.5, 0],
+                    rotate: floatUp ? [0, -1.2, 0] : [0, 1.2, 0],
                   }}
                   transition={{
                     duration: 14,
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
-                  className="relative overflow-hidden rounded-2xl"
+                  className="relative overflow-visible"
                 >
                   <Image
                     src={src}
                     alt={`Sauzi Tours Slide ${index + 1}`}
-                    className="slide-image w-full h-[400px] md:h-[500px] object-cover rounded-2xl"
+                    className="slide-image w-full h-[400px] md:h-[500px] object-cover rounded-2xl pointer-events-none"
                     width={1920}
                     height={1080}
                     priority
