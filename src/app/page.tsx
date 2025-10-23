@@ -1,8 +1,8 @@
-import HeroSection from "./components/HeroSection";
-import HeroCarousel from "./components/SwiperHero";
-
+import HeroSection from "./components/Hero";
 export default function Home() {
   return (
-    <HeroCarousel />
+    <>
+    <HeroSection />
+    </>
   );
 }
