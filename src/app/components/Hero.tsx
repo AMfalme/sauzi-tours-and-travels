@@ -8,6 +8,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
+import "./hero-swiper.css";
 
 export default function HeroSection() {
   const [form, setForm] = useState({
@@ -63,7 +64,6 @@ export default function HeroSection() {
           viewport={{ once: true }}
           className="bg-white rounded-2xl shadow-md p-6 space-y-4"
         >
-          {/* Destination */}
           <div>
             <label className="block text-sm font-semibold mb-1 text-gray-700">
               Destination
@@ -77,7 +77,6 @@ export default function HeroSection() {
             />
           </div>
 
-          {/* Date + Guests */}
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-semibold mb-1 text-gray-700">
@@ -107,7 +106,6 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -119,7 +117,7 @@ export default function HeroSection() {
         </motion.form>
       </motion.div>
 
-      {/* RIGHT — Image Carousel with Alternating Float */}
+      {/* RIGHT — Slide with Soft Fade Out */}
       <motion.div
         initial={{ opacity: 0, x: 60 }}
         whileInView={{ opacity: 1, x: 0 }}
@@ -129,31 +127,35 @@ export default function HeroSection() {
       >
         <Swiper
           modules={[Autoplay, Pagination]}
-          autoplay={{ delay: 3500 }}
+          autoplay={{
+            delay: 6500,
+            disableOnInteraction: false,
+          }}
+          speed={2000}
           pagination={{ clickable: true }}
           loop
-          className="rounded-2xl shadow-lg"
+          className="hero-swiper rounded-2xl shadow-lg overflow-hidden"
         >
           {["/images/simba.png", "/images/watermark.png"].map((src, index) => {
-            // Alternate direction per image
             const floatUp = index % 2 === 0;
             return (
               <SwiperSlide key={index}>
                 <motion.div
                   animate={{
-                    y: floatUp ? [0, -25, 0] : [0, 25, 0],
-                    rotate: floatUp ? [0, -2, 0] : [0, 2, 0],
+                    y: floatUp ? [0, -20, 0] : [0, 20, 0],
+                    rotate: floatUp ? [0, -1.5, 0] : [0, 1.5, 0],
                   }}
                   transition={{
-                    duration: 12,
+                    duration: 14,
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
+                  className="relative overflow-hidden rounded-2xl"
                 >
                   <Image
                     src={src}
                     alt={`Sauzi Tours Slide ${index + 1}`}
-                    className="w-full h-[400px] md:h-[500px] object-cover rounded-2xl"
+                    className="slide-image w-full h-[400px] md:h-[500px] object-cover rounded-2xl"
                     width={1920}
                     height={1080}
                     priority

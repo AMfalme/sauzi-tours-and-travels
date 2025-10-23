@@ -1,0 +1,13 @@
+.hero-swiper .swiper-slide {
+  opacity: 1;
+  transition: opacity 1.8s ease-in-out;
+}
+
+.hero-swiper .swiper-slide-prev {
+  opacity: 0; /* fading out the slide that’s leaving */
+}
+
+.hero-swiper .swiper-slide-active {
+  opacity: 1;
+  transition: opacity 1.8s ease-in-out;
+}
