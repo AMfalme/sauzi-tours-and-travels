@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import Navbar from "./components/Nav";
-
+import Footer from "./components/footer";
 export const metadata = {
   title: "Sauzi Tours and Travels",
   description: "Sauzi Tours and Travels",
@@ -26,6 +26,7 @@ export default function RootLayout({
       <body>
         <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );
