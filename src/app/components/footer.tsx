@@ -16,7 +16,7 @@ export default function Footer() {
         className="px-6 md:px-16 py-12 border-b border-gray-800 text-center"
       >
         <h3 className="text-2xl font-semibold text-white mb-3">
-          Let's Plan Your Next Adventure 🌍
+          Let&apos;s Plan Your Next Adventure 🌍
         </h3>
         <p className="text-sm text-gray-400 mb-6">
           Subscribe for exclusive travel deals, updates & inspiration.

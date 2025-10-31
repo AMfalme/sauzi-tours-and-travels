@@ -3,13 +3,15 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper as SwiperType } from "swiper";
+
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 export default function HeroCarousel() {
-  const swiperRef = useRef<any>(null);
+  const swiperRef = useRef<SwiperType|null>(null);
 
   const slides = [
     {
