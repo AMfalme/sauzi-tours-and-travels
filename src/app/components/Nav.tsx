@@ -45,7 +45,7 @@ export default function Navbar() {
             </svg>
           </li>
           <li>
-            <Link className="text-sm decoration-none text-gray-400 hover:text-gray-500 uppercase no-underline" href="/tours">
+            <Link className="text-sm decoration-none text-gray-400 hover:text-gray-500 uppercase no-underline" href="/packages">
               TOURS
             </Link>
           </li>

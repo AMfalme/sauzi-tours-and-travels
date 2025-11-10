@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-
+import WhyChooseUs from "../sections/why-us";
 export default function AboutPage() {
   return (
     <section className="bg-white py-16">
@@ -9,7 +9,7 @@ export default function AboutPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            About <span className="text-blue-600">Sauzi Tours & Travel</span>
+            About <span className="text-green-600">Sauzi Tours & Travel</span>
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Discover the world with us. We are passionate about creating unforgettable travel experiences
@@ -50,7 +50,8 @@ export default function AboutPage() {
             </ul>
           </div>
         </div>
-
+         <WhyChooseUs/>
+           
         {/* CTA */}
         <div className="text-center mt-16">
           <a

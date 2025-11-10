@@ -25,7 +25,9 @@ h1, h2, h3, h4, h5, h6 {
 .bg-primary-green{
   background-color: #0D9276; /* Example Sauzi Tours brand */
 }
-
+.primary-color{
+  color: var(--bg-primary-green);
+}
 .secondary-green{
   background-color: #0D9276; /* Example Sauzi Tours brand */
 }

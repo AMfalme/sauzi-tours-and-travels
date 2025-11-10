@@ -97,7 +97,7 @@ export default function HeroSection() {
             type="submit"
             className="w-full bg-blue-600 text-white font-semibold rounded-xl py-3 hover:bg-blue-700 transition-all"
           >
-            Search Tours
+            Get a Quote
           </motion.button>
         </form>
       </motion.div>
