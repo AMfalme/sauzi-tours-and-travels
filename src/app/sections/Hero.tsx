@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/app/lib/firebase";
+
 import { Input } from "../components/ui/input";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -18,13 +21,63 @@ export default function HeroSection() {
     guests: "",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{
+    destination?: string;
+    date?: string;
+    guests?: string;
+  }>({});
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+
+    if (!form.destination.trim()) {
+      newErrors.destination = "Destination is required";
+    }
+
+    if (!form.date) {
+      newErrors.date = "Date is required";
+    }
+
+    if (!form.guests || Number(form.guests) < 1) {
+      newErrors.guests = "At least 1 guest is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Search:", form);
+
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      await addDoc(collection(db, "tour_requests"), {
+        destination: form.destination.trim(),
+        startDate: new Date(form.date),
+        guests: Number(form.guests),
+        source: "hero_form",
+        status: "new",
+        createdAt: serverTimestamp(),
+      });
+
+      setForm({ destination: "", date: "", guests: "" });
+      setErrors({});
+      alert("Request sent! We’ll get back to you shortly.");
+
+    } catch (error) {
+      console.error("FIRESTORE ERROR:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -58,8 +111,13 @@ export default function HeroSection() {
               placeholder="e.g. Maasai Mara"
               value={form.destination}
               onChange={handleChange}
-              className="rounded-xl focus:ring-2 focus:ring-blue-500"
+              className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${
+                errors.destination ? "border-red-500" : ""
+              }`}
             />
+            {errors.destination && (
+              <p className="text-sm text-red-600 mt-1">{errors.destination}</p>
+            )}
           </div>
 
           <div className="flex gap-4">
@@ -72,12 +130,17 @@ export default function HeroSection() {
                 name="date"
                 value={form.date}
                 onChange={handleChange}
-                className="rounded-xl focus:ring-2 focus:ring-blue-500"
+                className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${
+                  errors.date ? "border-red-500" : ""
+                }`}
               />
+              {errors.date && (
+                <p className="text-sm text-red-600 mt-1">{errors.date}</p>
+              )}
             </div>
             <div className="flex-1">
               <label className="block text-sm font-semibold mb-1 text-gray-700">
-                Guests
+                No. of Adults / Children
               </label>
               <Input
                 type="number"
@@ -86,18 +149,28 @@ export default function HeroSection() {
                 placeholder="2"
                 value={form.guests}
                 onChange={handleChange}
-                className="rounded-xl focus:ring-2 focus:ring-blue-500"
+                className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${
+                  errors.guests ? "border-red-500" : ""
+                }`}
               />
+              {errors.guests && (
+                <p className="text-sm text-red-600 mt-1">{errors.guests}</p>
+              )}
             </div>
           </div>
 
           <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={!isSubmitting ? { scale: 1.03 } : {}}
+            whileTap={!isSubmitting ? { scale: 0.97 } : {}}
             type="submit"
-            className="w-full bg-blue-600 text-white font-semibold rounded-xl py-3 hover:bg-blue-700 transition-all"
+            disabled={isSubmitting}
+            className={`w-full font-semibold rounded-xl py-3 transition-all ${
+              isSubmitting
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
           >
-            Get a Quote
+            {isSubmitting ? "Sending request..." : "Build My Safari"}
           </motion.button>
         </form>
       </motion.div>

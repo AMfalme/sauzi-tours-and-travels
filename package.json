@@ -12,6 +12,7 @@
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.0",
     "clsx": "^2.1.1",
+    "firebase": "^12.7.0",
     "framer-motion": "^12.23.24",
     "next": "15.5.4",
     "react": "19.1.0",
