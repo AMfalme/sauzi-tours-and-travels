@@ -7,7 +7,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 
 import { Input } from "../components/ui/input";
-import AccountPrompt from "../components/AccountPrompt";
+// import AccountPrompt from "../components/AccountPrompt";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
@@ -86,7 +86,7 @@ export default function HeroSection() {
 
   return (
     <section className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-blue-50 to-white px-6 md:px-16 py-12 overflow-hidden">
-     <AccountPrompt />
+     
       {/* LEFT — Form */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}

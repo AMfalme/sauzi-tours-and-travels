@@ -1,6 +1,8 @@
 import "./globals.css";
 
 import Navbar from "./components/Nav";
+
+import LoginSlideModal from "./components/loginPrompt";
 import Footer from "./components/footer";
 export const metadata = {
   title: "Sauzi Tours and Travels",
@@ -24,6 +26,7 @@ export default function RootLayout({
 
       </head>
       <body>
+        <LoginSlideModal />
         <Navbar />
         {children}
         <Footer />

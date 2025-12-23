@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 // import LoginWithGoogleButton from "@/components/login-google";
 
 export default function LoginSlideModal() {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(true);
   const router = useRouter();
 //   const { user } = useAuth(); // get logged-in user
 
