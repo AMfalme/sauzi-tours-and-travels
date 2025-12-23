@@ -7,6 +7,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 
 import { Input } from "../components/ui/input";
+import AccountPrompt from "../components/AccountPrompt";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
@@ -15,65 +16,68 @@ import "swiper/css/pagination";
 import "./hero-swiper.css";
 
 export default function HeroSection() {
-  const [form, setForm] = useState({
+  const initialForm = {
     destination: "",
     date: "",
     guests: "",
-  });
+    childrenAges: "",
+    name: "",
+    email: "",
+    phone: "",
+   
+  };
 
+  const [form, setForm] = useState(initialForm);
+  const [step, setStep] = useState(0);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{
-    destination?: string;
-    date?: string;
-    guests?: string;
-  }>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const validateForm = () => {
-    const newErrors: typeof errors = {};
+  const validateStep = (currentStep: number) => {
+    const newErrors: Record<string, string> = {};
 
-    if (!form.destination.trim()) {
-      newErrors.destination = "Destination is required";
-    }
-
-    if (!form.date) {
-      newErrors.date = "Date is required";
-    }
-
-    if (!form.guests || Number(form.guests) < 1) {
-      newErrors.guests = "At least 1 guest is required";
+    if (currentStep === 0) {
+      if (!form.destination.trim()) newErrors.destination = "Destination is required";
+      if (!form.date) newErrors.date = "Date is required";
+      if (!form.guests || Number(form.guests) < 1) newErrors.guests = "At least 1 guest is required";
+    } else if (currentStep === 1) {
+      if (!form.name.trim()) newErrors.name = "Name is required";
+      if (!form.email.trim() && !form.phone.trim()) {
+        newErrors.email = "Provide email or phone to be contacted";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const nextStep = () => {
+    if (validateStep(step)) setStep(step + 1);
+  };
+
+  const prevStep = () => setStep(step - 1);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) return;
+    if (!validateStep(step)) return;
 
     setIsSubmitting(true);
-
     try {
       await addDoc(collection(db, "tour_requests"), {
-        destination: form.destination.trim(),
-        startDate: new Date(form.date),
-        guests: Number(form.guests),
-        source: "hero_form",
-        status: "new",
+        ...form,
         createdAt: serverTimestamp(),
+        status: "new",
+        source: "multi_step_form",
       });
-
-      setForm({ destination: "", date: "", guests: "" });
-      setErrors({});
       alert("Request sent! We’ll get back to you shortly.");
-
-    } catch (error) {
-      console.error("FIRESTORE ERROR:", error);
+      setForm(initialForm);
+      setStep(0);
+      setErrors({});
+    } catch (err) {
+      console.error("FIRESTORE ERROR:", err);
       alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -82,7 +86,8 @@ export default function HeroSection() {
 
   return (
     <section className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-blue-50 to-white px-6 md:px-16 py-12 overflow-hidden">
-      {/* LEFT — Booking Form */}
+     <AccountPrompt />
+      {/* LEFT — Form */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -102,76 +107,141 @@ export default function HeroSection() {
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl shadow-md p-6 space-y-4"
         >
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">
-              Destination
-            </label>
-            <Input
-              name="destination"
-              placeholder="e.g. Maasai Mara"
-              value={form.destination}
-              onChange={handleChange}
-              className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${
-                errors.destination ? "border-red-500" : ""
-              }`}
-            />
-            {errors.destination && (
-              <p className="text-sm text-red-600 mt-1">{errors.destination}</p>
-            )}
-          </div>
+          {/* Step Indicator */}
+          <p className="text-sm text-gray-500 mb-2">Step {step + 1} of 2</p>
 
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-semibold mb-1 text-gray-700">
-                Date
-              </label>
-              <Input
-                type="date"
-                name="date"
-                value={form.date}
-                onChange={handleChange}
-                className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${
-                  errors.date ? "border-red-500" : ""
-                }`}
-              />
-              {errors.date && (
-                <p className="text-sm text-red-600 mt-1">{errors.date}</p>
-              )}
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-semibold mb-1 text-gray-700">
-                No. of Adults / Children
-              </label>
-              <Input
-                type="number"
-                name="guests"
-                min={1}
-                placeholder="2"
-                value={form.guests}
-                onChange={handleChange}
-                className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${
-                  errors.guests ? "border-red-500" : ""
-                }`}
-              />
-              {errors.guests && (
-                <p className="text-sm text-red-600 mt-1">{errors.guests}</p>
-              )}
-            </div>
-          </div>
+          {/* Step 1: Trip Details */}
+          {step === 0 && (
+            <>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">
+                  Destination
+                </label>
+                <Input
+                  name="destination"
+                  placeholder="e.g. Maasai Mara"
+                  value={form.destination}
+                  onChange={handleChange}
+                  className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${errors.destination ? "border-red-500" : ""}`}
+                />
+                {errors.destination && <p className="text-sm text-red-600 mt-1">{errors.destination}</p>}
+              </div>
 
-          <motion.button
-            whileHover={!isSubmitting ? { scale: 1.03 } : {}}
-            whileTap={!isSubmitting ? { scale: 0.97 } : {}}
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full font-semibold rounded-xl py-3 transition-all ${
-              isSubmitting
-                ? "bg-blue-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
-          >
-            {isSubmitting ? "Sending request..." : "Build My Safari"}
-          </motion.button>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold mb-1 text-gray-700">
+                    Date
+                  </label>
+                  <Input
+                    type="date"
+                    name="date"
+                    value={form.date}
+                    onChange={handleChange}
+                    className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${errors.date ? "border-red-500" : ""}`}
+                  />
+                  {errors.date && <p className="text-sm text-red-600 mt-1">{errors.date}</p>}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold mb-1 text-gray-700">
+                    No. of Adults / Children
+                  </label>
+                  <Input
+                    type="number"
+                    name="guests"
+                    min={1}
+                    placeholder="2"
+                    value={form.guests}
+                    onChange={handleChange}
+                    className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${errors.guests ? "border-red-500" : ""}`}
+                  />
+                  {errors.guests && <p className="text-sm text-red-600 mt-1">{errors.guests}</p>}
+                </div>
+              </div>
+
+              <motion.button
+                type="button"
+                onClick={nextStep}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full bg-blue-600 text-white font-semibold rounded-xl py-3 hover:bg-blue-700 transition-all"
+              >
+                Next
+              </motion.button>
+            </>
+          )}
+
+          {/* Step 2: Contact & Preferences */}
+          {step === 1 && (
+            <>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">
+                  Full Name
+                </label>
+                <Input
+                  name="name"
+                  placeholder="Your name"
+                  value={form.name}
+                  onChange={handleChange}
+                  className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-500" : ""}`}
+                />
+                {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">
+                  Email
+                </label>
+                <Input
+                  name="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  className={`rounded-xl focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-500" : ""}`}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">
+                  Phone
+                </label>
+                <Input
+                  name="phone"
+                  type="tel"
+                  placeholder="+2547xxxxxxx"
+                  value={form.phone}
+                  onChange={handleChange}
+                  className="rounded-xl focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              
+
+              <div className="flex gap-4 mt-4">
+                <motion.button
+                  type="button"
+                  onClick={prevStep}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex-1 border border-gray-400 font-semibold rounded-xl py-3 hover:bg-gray-100 transition-all"
+                >
+                  Back
+                </motion.button>
+
+                <motion.button
+                  type="submit"
+                  disabled={isSubmitting}
+                  whileHover={!isSubmitting ? { scale: 1.03 } : {}}
+                  whileTap={!isSubmitting ? { scale: 0.97 } : {}}
+                  className={`flex-1 font-semibold rounded-xl py-3 transition-all ${
+                    isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-white"
+                  }`}
+                >
+                  {isSubmitting ? "Sending request..." : "Submit Request"}
+                </motion.button>
+              </div>
+            </>
+          )}
         </form>
       </motion.div>
 
@@ -185,10 +255,7 @@ export default function HeroSection() {
       >
         <Swiper
           modules={[Autoplay, Pagination]}
-          autoplay={{
-            delay: 6500,
-            disableOnInteraction: false,
-          }}
+          autoplay={{ delay: 6500, disableOnInteraction: false }}
           speed={1200}
           pagination={{ clickable: true }}
           loop
@@ -203,11 +270,7 @@ export default function HeroSection() {
                     y: floatUp ? [0, -20, 0] : [0, 20, 0],
                     rotate: floatUp ? [0, -1.2, 0] : [0, 1.2, 0],
                   }}
-                  transition={{
-                    duration: 14,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
+                  transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
                   className="relative overflow-visible"
                 >
                   <Image
