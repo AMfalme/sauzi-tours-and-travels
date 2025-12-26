@@ -2,8 +2,8 @@
 
 
 import { useState } from "react";
-import { Input } from "../components/ui/input";
-import { TextArea} from "../components/ui/textarea"
+import { Input } from "@/app/components/ui/input";
+import { TextArea} from "@/app/components/ui/textarea"
 export default function ContactPage() {
 
 

@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 
-import { Input } from "../components/ui/input";
-// import AccountPrompt from "../components/AccountPrompt";
+import { Input } from "@/app/components/ui/input";
+// import AccountPrompt from "@/app/components/AccountPrompt";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
