@@ -262,29 +262,30 @@ export default function HeroSection() {
           className="hero-swiper rounded-2xl shadow-lg"
         >
           {["/images/simba.png", "/images/watermark.png"].map((src, index) => {
-            const floatUp = index % 2 === 0;
-            return (
-              <SwiperSlide key={index}>
-                <motion.div
-                  animate={{
-                    y: floatUp ? [0, -20, 0] : [0, 20, 0],
-                    rotate: floatUp ? [0, -1.2, 0] : [0, 1.2, 0],
-                  }}
-                  transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative overflow-visible"
-                >
-                  <Image
-                    src={src}
-                    alt={`Sauzi Tours Slide ${index + 1}`}
-                    className="slide-image w-full h-[400px] md:h-[500px] object-cover rounded-2xl pointer-events-none"
-                    width={1920}
-                    height={1080}
-                    priority
-                  />
-                </motion.div>
-              </SwiperSlide>
-            );
-          })}
+  const floatUp = index % 2 === 0;
+
+  return (
+    <SwiperSlide key={index}>
+      <motion.div
+        animate={{
+          y: floatUp ? [0, -20, 0] : [0, 20, 0],
+          rotate: floatUp ? [0, -1.2, 0] : [0, 1.2, 0],
+        }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        className="relative w-full h-[400px] md:h-[500px] overflow-visible"
+      >
+        <Image
+          src={src}
+          alt={`Sauzi Tours Slide ${index + 1}`}
+          fill
+          className="object-cover rounded-2xl pointer-events-none"
+          priority={index === 0}
+        />
+      </motion.div>
+    </SwiperSlide>
+  );
+})}
+
         </Swiper>
       </motion.div>
     </section>

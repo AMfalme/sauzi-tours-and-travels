@@ -94,15 +94,15 @@ export default function Testimonials() {
             >
               {/* Avatar + Name */}
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full overflow-hidden border">
-                  <Image
-                    src={r.img}
-                    alt={r.name}
-                    width={200}
-                    height={200}
-                    className="object-cover"
-                  />
-                </div>
+               <div className="relative w-14 h-14 rounded-full overflow-hidden border">
+                <Image
+                  src={r.img}
+                  alt={r.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+
                 <div>
                   <h4 className="font-bold text-gray-900 text-base">{r.name}</h4>
                   <p className="text-xs text-gray-500">{r.country}</p>

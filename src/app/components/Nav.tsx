@@ -8,7 +8,7 @@ export default function Navbar() {
         <Link href="/" className="navbar-brand p-0">
           <Image
             className="img-fluid"
-            src="/images/sauzi logo img.png"
+            src="/images/sauzi-logo-img.png"
             alt="Sauzi Tours & Travel"
             width={200}
             height={100}
@@ -84,7 +84,7 @@ export default function Navbar() {
             <Link className="mr-auto text-3xl font-bold leading-none" href="/">
               <Image
                 className="img-fluid"
-                src="/images/sauzi logo img.png"
+                src="/images/sauzi-logo-img.png"
                 alt="Sauzi Tours & Travel"
                 width={150}
                 height={75}

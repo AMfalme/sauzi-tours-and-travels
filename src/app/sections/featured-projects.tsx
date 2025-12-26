@@ -69,14 +69,15 @@ export default function FeaturedPackages() {
             >
               
               {/* IMG wrapper */}
-              <div className="relative overflow-hidden">
-                <Image
-                  src={pkg.img}
-                  width={500}
-                  height={350}
-                  alt={pkg.name}
-                  className="w-full h-64 object-cover group-hover:brightness-90 transition"
-                />
+               <div className="relative w-full h-64 overflow-hidden">
+  <Image
+    src={pkg.img}
+    alt={pkg.name}
+    fill
+    className="object-cover group-hover:brightness-90 transition"
+    priority={false}
+  />
+
 
                 {/* Price Tag */}
                 <div className="absolute bottom-3 left-3 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-lg shadow-lg">

@@ -107,8 +107,8 @@ export default function PopularDestinations() {
                 <Image
                   src={place.img}
                   alt={place.name}
-                  width={600}
-                  height={400}
+                  
+                  fill
                   className="object-cover w-full h-64 group-hover:brightness-95"
                   priority={i === 0}
                 />

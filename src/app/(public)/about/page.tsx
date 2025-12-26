@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import WhyChooseUs from "../sections/why-us";
+import WhyChooseUs from "../../sections/why-us";
 export default function AboutPage() {
   return (
     <section className="bg-white py-16">
