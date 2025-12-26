@@ -1,4 +1,4 @@
-import PopularDestinations from "../sections/popular-destinations";
+import PopularDestinations from "@/app/sections/popular-destinations";
 export default function AboutPage() {
   return (
     <section className="py-16 bg-white text-center">

@@ -1,5 +1,4 @@
-import FeaturedPackages from "../sections/featured-projects";
-
+import FeaturedPackages from "@/app/sections/featured-projects";
 
 export default function PackagesPage() {
   const packages = [
