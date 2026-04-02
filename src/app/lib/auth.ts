@@ -1,11 +1,13 @@
 import {
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
   signOut,
   onAuthStateChanged,
   User as FirebaseUser,
 } from "firebase/auth";
 import { auth } from "./firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
 export type User = {
@@ -36,6 +38,54 @@ export async function loginWithEmail(
       message = "Invalid email address";
     } else if (error.code === "auth/too-many-requests") {
       message = "Too many login attempts. Please try again later.";
+    }
+    return { success: false, message };
+  }
+}
+
+export async function signupWithEmail(
+  email: string,
+  password: string,
+  name: string
+): Promise<{ success: boolean; message: string; user?: FirebaseUser }> {
+  try {
+    // Create user account
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    // Update profile with name
+    await updateProfile(userCredential.user, {
+      displayName: name,
+    });
+
+    // Create user document in Firestore
+    await setDoc(doc(db, "users", userCredential.user.uid), {
+      uid: userCredential.user.uid,
+      name: name,
+      email: email,
+      role: "user",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    return {
+      success: true,
+      message: "Account created successfully",
+      user: userCredential.user,
+    };
+  } catch (error: any) {
+    let message = "Signup failed";
+    if (error.code === "auth/email-already-in-use") {
+      message = "Email is already registered";
+    } else if (error.code === "auth/weak-password") {
+      message = "Password is too weak (min 6 characters)";
+    } else if (error.code === "auth/invalid-email") {
+      message = "Invalid email address";
+    } else if (error.code === "auth/operation-not-allowed") {
+      message = "Account creation is disabled";
     }
     return { success: false, message };
   }
