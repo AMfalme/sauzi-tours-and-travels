@@ -36,6 +36,14 @@ export default function HeroSection() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const isStep0Complete = () => {
+    return (
+      form.destination.trim().length > 0 &&
+      form.date.length > 0 &&
+      Number(form.guests) >= 1
+    );
+  };
+
   const validateStep = (currentStep: number) => {
     const newErrors: Record<string, string> = {};
 
@@ -149,6 +157,7 @@ export default function HeroSection() {
                     type="number"
                     name="guests"
                     min={1}
+                    max={10}
                     placeholder="2"
                     value={form.guests}
                     onChange={handleChange}
@@ -161,9 +170,8 @@ export default function HeroSection() {
               <motion.button
                 type="button"
                 onClick={nextStep}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full bg-blue-600 text-white font-semibold rounded-xl py-3 hover:bg-blue-700 transition-all"
+                disabled={!isStep0Complete()}
+                className={`w-full bg-blue-600 text-white font-semibold rounded-xl py-3 transition-all ${!isStep0Complete() ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"}`}
               >
                 Next
               </motion.button>
@@ -211,6 +219,8 @@ export default function HeroSection() {
                   placeholder="+2547xxxxxxx"
                   value={form.phone}
                   onChange={handleChange}
+                  pattern="^[\+]?[\d\s\-\(\)]{10,20}$"
+                  title="Please enter a valid phone number (10-20 characters, including digits, spaces, hyphens, parentheses, and optional +)"
                   className="rounded-xl focus:ring-2 focus:ring-blue-500"
                 />
               </div>
