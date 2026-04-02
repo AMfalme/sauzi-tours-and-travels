@@ -7,10 +7,16 @@ import { motion } from "framer-motion";
 import { Input } from "@/app/components/ui/input";
 import { loginWithEmail } from "@/app/lib/auth";
 
+type Notification = {
+  type: "success" | "error";
+  message: string;
+};
+
 const LoginPage = () => {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [notification, setNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,10 +44,13 @@ const LoginPage = () => {
     const result = await loginWithEmail(form.email, form.password);
 
     if (result.success) {
-      // Redirect to user dashboard
-      router.push("/dashboard");
+      setNotification({ type: "success", message: "Login successful! Redirecting..." });
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 700);
     } else {
       setError(result.message);
+      setNotification({ type: "error", message: result.message });
     }
 
     setLoading(false);
@@ -93,7 +102,23 @@ const LoginPage = () => {
             />
           </div>
 
-          {/* Error Message */}
+          {/* Notification */}
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-md rounded-lg px-4 py-3 text-sm shadow-lg ${
+              notification.type === "success"
+                ? "bg-emerald-100 border border-emerald-300 text-emerald-800"
+                : "bg-rose-100 border border-rose-300 text-rose-800"
+            }`}
+          >
+            {notification.message}
+          </motion.div>
+        )}
+
+        {/* Error Message */}
           {error && (
             <motion.div
               initial={{ opacity: 0 }}

@@ -1,10 +1,47 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { logoutUser, subscribeToAuthChanges } from "@/app/lib/auth";
 
 export default function Navbar() {
+  const [user, setUser] = useState(false);
+  const [notification, setNotification] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((currentUser) => {
+      setUser(!!currentUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setNotification("Logged out successfully.");
+      setUser(false);
+      setTimeout(() => {
+        setNotification(null);
+        router.push("/login");
+      }, 800);
+    } catch {
+      setNotification("Unable to logout. Please try again.");
+      setTimeout(() => setNotification(null), 2000);
+    }
+  };
+
   return (
     <>
-      <nav className="relative px-4 py-4 flex justify-between items-center bg-white">
+      {notification && (
+        <div className="fixed top-4 right-4 z-50 rounded-lg bg-blue-600 text-white px-4 py-2 shadow-lg">
+          {notification}
+        </div>
+      )}
+      <nav className="relative px-4 py-4 flex justify-between items-center bg-white">      
         <Link href="/" className="navbar-brand p-0">
           <Image
             className="img-fluid"
@@ -70,12 +107,37 @@ export default function Navbar() {
             </Link>
           </li>
         </ul>
-        <Link 
-          className="hidden lg:inline-block py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white font-bold rounded-full transition duration-200 uppercase no-underline" 
-          href="/quote"
-        >
-          GET A QUOTE
-        </Link>
+        {user ? (
+          <div className="hidden lg:flex gap-3 items-center">
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 text-sm text-blue-600 font-semibold border border-blue-600 rounded-full hover:bg-blue-50 transition"
+            >
+              Dashboard
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm text-white font-semibold bg-rose-600 rounded-full hover:bg-rose-700 transition"
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
+          <div className="hidden lg:flex gap-3 items-center">
+            <Link
+              href="/login"
+              className="px-4 py-2 text-sm text-blue-600 font-semibold border border-blue-600 rounded-full hover:bg-blue-50 transition"
+            >
+              Login
+            </Link>
+            <Link
+              href="/register"
+              className="px-4 py-2 text-sm text-white font-semibold bg-blue-600 rounded-full hover:bg-blue-700 transition"
+            >
+              Sign Up
+            </Link>
+          </div>
+        )}
       </nav>
       <div className="navbar-menu relative z-50 hidden">
         <div className="navbar-backdrop fixed inset-0 bg-gray-800 opacity-25"></div>
@@ -127,12 +189,28 @@ export default function Navbar() {
           </div>
           <div className="mt-auto">
             <div className="pt-6">
-              <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/signin">
-                SIGN IN
-              </Link>
-              <Link className="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-blue-600 hover:bg-blue-700 rounded-full uppercase no-underline" href="/signup">
-                GET A QUOTE
-              </Link>
+              {user ? (
+                <>
+                  <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/dashboard">
+                    DASHBOARD
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-rose-600 hover:bg-rose-700 rounded-full uppercase"
+                  >
+                    LOGOUT
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/login">
+                    SIGN IN
+                  </Link>
+                  <Link className="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-blue-600 hover:bg-blue-700 rounded-full uppercase no-underline" href="/register">
+                    SIGN UP
+                  </Link>
+                </>
+              )}
             </div>
             <p className="my-4 text-xs text-center text-gray-400">
               <span>Copyright © 2023</span>
