@@ -1,4 +1,12 @@
-// src/lib/auth.tsx (or wherever your auth.tsx lives)
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  User as FirebaseUser,
+} from "firebase/auth";
+import { auth } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./firebase";
 
 export type User = {
   id: string;
@@ -7,12 +15,94 @@ export type User = {
   role: "user" | "admin";
 };
 
+export async function loginWithEmail(
+  email: string,
+  password: string
+): Promise<{ success: boolean; message: string; user?: FirebaseUser }> {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return {
+      success: true,
+      message: "Login successful",
+      user: userCredential.user,
+    };
+  } catch (error: any) {
+    let message = "Login failed";
+    if (error.code === "auth/user-not-found") {
+      message = "User not found";
+    } else if (error.code === "auth/wrong-password") {
+      message = "Incorrect password";
+    } else if (error.code === "auth/invalid-email") {
+      message = "Invalid email address";
+    } else if (error.code === "auth/too-many-requests") {
+      message = "Too many login attempts. Please try again later.";
+    }
+    return { success: false, message };
+  }
+}
+
+export async function logoutUser(): Promise<void> {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Logout error:", error);
+    throw error;
+  }
+}
+
+export function getCurrentUserSync(): FirebaseUser | null {
+  return auth.currentUser;
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   /**
-   * 🔒 DUMMY IMPLEMENTATION
-   * This simulates an unauthenticated user.
-   * Replace later with real auth logic.
+   * 🔒 Gets the current logged-in user from Firebase
+   * and fetches extended user data from Firestore if available.
    */
+  const firebaseUser = auth.currentUser;
+  if (!firebaseUser) return null;
 
-  return null;
+  try {
+    const userDocRef = doc(db, "users", firebaseUser.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      return {
+        id: firebaseUser.uid,
+        name: userData.name || firebaseUser.displayName || "User",
+        email: firebaseUser.email || "",
+        role: userData.role || "user",
+      };
+    } else {
+      // Return basic user info if no Firestore doc exists
+      return {
+        id: firebaseUser.uid,
+        name: firebaseUser.displayName || "User",
+        email: firebaseUser.email || "",
+        role: "user",
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return {
+      id: firebaseUser.uid,
+      name: firebaseUser.displayName || "User",
+      email: firebaseUser.email || "",
+      role: "user",
+    };
+  }
+}
+
+export function subscribeToAuthChanges(
+  callback: (user: User | null) => void
+): () => void {
+  return onAuthStateChanged(auth, async (firebaseUser) => {
+    if (firebaseUser) {
+      const user = await getCurrentUser();
+      callback(user);
+    } else {
+      callback(null);
+    }
+  });
 }
