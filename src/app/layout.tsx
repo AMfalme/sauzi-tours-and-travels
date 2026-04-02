@@ -17,15 +17,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        {/* ✅ Add Font Awesome CSS here */}
-        <link
-  rel="stylesheet"
-  href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
-  
-/>
-
-      </head>
       <body>
         <LoginSlideModal />
         <Navbar />

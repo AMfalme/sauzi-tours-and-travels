@@ -28,17 +28,22 @@ export async function loginWithEmail(
       message: "Login successful",
       user: userCredential.user,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const firebaseError = error as { code?: string; message?: string };
     let message = "Login failed";
-    if (error.code === "auth/user-not-found") {
+
+    if (firebaseError.code === "auth/user-not-found") {
       message = "User not found";
-    } else if (error.code === "auth/wrong-password") {
+    } else if (firebaseError.code === "auth/wrong-password") {
       message = "Incorrect password";
-    } else if (error.code === "auth/invalid-email") {
+    } else if (firebaseError.code === "auth/invalid-email") {
       message = "Invalid email address";
-    } else if (error.code === "auth/too-many-requests") {
+    } else if (firebaseError.code === "auth/too-many-requests") {
       message = "Too many login attempts. Please try again later.";
+    } else if (firebaseError.message) {
+      message = firebaseError.message;
     }
+
     return { success: false, message };
   }
 }
@@ -76,17 +81,22 @@ export async function signupWithEmail(
       message: "Account created successfully",
       user: userCredential.user,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const firebaseError = error as { code?: string; message?: string };
     let message = "Signup failed";
-    if (error.code === "auth/email-already-in-use") {
+
+    if (firebaseError.code === "auth/email-already-in-use") {
       message = "Email is already registered";
-    } else if (error.code === "auth/weak-password") {
+    } else if (firebaseError.code === "auth/weak-password") {
       message = "Password is too weak (min 6 characters)";
-    } else if (error.code === "auth/invalid-email") {
+    } else if (firebaseError.code === "auth/invalid-email") {
       message = "Invalid email address";
-    } else if (error.code === "auth/operation-not-allowed") {
+    } else if (firebaseError.code === "auth/operation-not-allowed") {
       message = "Account creation is disabled";
+    } else if (firebaseError.message) {
+      message = firebaseError.message;
     }
+
     return { success: false, message };
   }
 }

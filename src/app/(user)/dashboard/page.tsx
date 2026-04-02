@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { subscribeToAuthChanges, logoutUser } from "@/app/lib/auth";
+import { subscribeToAuthChanges, logoutUser, User } from "@/app/lib/auth";
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null);
-  const [status, setStatus] = useState<string>("Checking authentication...");
+  const [user, setUser] = useState<User | null>(null);
+  const [status, setStatus] = useState("Checking authentication...");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
