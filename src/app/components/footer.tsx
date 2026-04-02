@@ -79,8 +79,16 @@ export default function Footer() {
           <h4 className="font-semibold text-lg text-white mb-4">Contact</h4>
           <ul className="space-y-3 text-sm">
             <li>Nairobi, Kenya</li>
-            <li>+254 712 345 678</li>
-            <li>info@sauzitours.com</li>
+            <li>
+              <a href="tel:+491743637476" className="hover:text-blue-400 transition">
+                +49 174 3637476
+              </a>
+            </li>
+            <li>
+              <a href="mailto:dennis4twaayf@gmail.com" className="hover:text-blue-400 transition">
+                dennis4twaayf@gmail.com
+              </a>
+            </li>
           </ul>
         </div>
 
