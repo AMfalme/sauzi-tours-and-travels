@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -18,6 +18,17 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [notification, setNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!notification && !error) return;
+
+    const timer = setTimeout(() => {
+      setNotification(null);
+      setError("");
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, [notification, error]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

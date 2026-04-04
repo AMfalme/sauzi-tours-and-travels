@@ -33,15 +33,17 @@ export async function loginWithEmail(
     let message = "Login failed";
 
     if (firebaseError.code === "auth/user-not-found") {
-      message = "User not found";
+      message = "No account found for that email address.";
     } else if (firebaseError.code === "auth/wrong-password") {
-      message = "Incorrect password";
+      message = "The password is incorrect. Please try again.";
     } else if (firebaseError.code === "auth/invalid-email") {
-      message = "Invalid email address";
+      message = "Please enter a valid email address.";
+    } else if (firebaseError.code === "auth/invalid-credential") {
+      message = "Invalid login credentials. Please check your email and password.";
     } else if (firebaseError.code === "auth/too-many-requests") {
-      message = "Too many login attempts. Please try again later.";
-    } else if (firebaseError.message) {
-      message = firebaseError.message;
+      message = "Too many failed login attempts. Please wait a minute and try again.";
+    } else {
+      message = "Unable to sign in right now. Please try again later.";
     }
 
     return { success: false, message };
