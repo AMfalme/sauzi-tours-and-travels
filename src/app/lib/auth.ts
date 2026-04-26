@@ -5,9 +5,10 @@ import {
   signOut,
   onAuthStateChanged,
   User as FirebaseUser,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "./firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
 export type User = {
@@ -15,6 +16,11 @@ export type User = {
   name: string;
   email: string;
   role: "user" | "admin";
+};
+
+export type UserRecord = User & {
+  createdAt?: string | null;
+  updatedAt?: string | null;
 };
 
 export async function loginWithEmail(
@@ -112,6 +118,31 @@ export async function logoutUser(): Promise<void> {
   }
 }
 
+export async function forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return {
+      success: true,
+      message: "Password reset email sent. Please check your inbox.",
+    };
+  } catch (error: unknown) {
+    const firebaseError = error as { code?: string; message?: string };
+    let message = "Failed to send password reset email";
+
+    if (firebaseError.code === "auth/user-not-found") {
+      message = "No account found for that email address.";
+    } else if (firebaseError.code === "auth/invalid-email") {
+      message = "Please enter a valid email address.";
+    } else if (firebaseError.code === "auth/too-many-requests") {
+      message = "Too many requests. Please wait a minute and try again.";
+    } else {
+      message = firebaseError.message?firebaseError.message:'';
+    }
+
+    return { success: false, message };
+  }
+}
+
 export function getCurrentUserSync(): FirebaseUser | null {
   return auth.currentUser;
 }
@@ -153,6 +184,50 @@ export async function getCurrentUser(): Promise<User | null> {
       email: firebaseUser.email || "",
       role: "user",
     };
+  }
+}
+
+export async function getUserByUid(uid: string): Promise<User | null> {
+  try {
+    const userDocRef = doc(db, "users", uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (!userDocSnap.exists()) {
+      return null;
+    }
+
+    const userData = userDocSnap.data();
+    return {
+      id: uid,
+      name: userData.name || "User",
+      email: userData.email || "",
+      role: userData.role || "user",
+    };
+  } catch (error) {
+    console.error("Error fetching user by uid:", error);
+    return null;
+  }
+}
+
+export async function getAllUsers(): Promise<UserRecord[]> {
+  try {
+    const usersSnap = await getDocs(collection(db, "users"));
+
+    return usersSnap.docs.map((userDoc) => {
+      const userData = userDoc.data();
+
+      return {
+        id: userDoc.id,
+        name: userData.name || "User",
+        email: userData.email || "",
+        role: userData.role || "user",
+        createdAt: userData.createdAt?.toDate?.()?.toISOString?.() ?? null,
+        updatedAt: userData.updatedAt?.toDate?.()?.toISOString?.() ?? null,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return [];
   }
 }
 

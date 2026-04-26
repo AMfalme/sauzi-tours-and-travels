@@ -1,75 +1,191 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { subscribeToAuthChanges, logoutUser, User } from "@/app/lib/auth";
+import {
+  subscribeToAuthChanges,
+  logoutUser,
+  getAllUsers,
+  User,
+  UserRecord,
+} from "@/app/lib/auth";
+import type { BookingRecord } from "@/app/lib/bookings";
+import DashboardSidebar, {
+  DashboardNavItem,
+  DashboardNavKey,
+} from "@/app/components/dashboard/DashboardSidebar";
+import StatsRow from "@/app/components/dashboard/StatsRow";
+import OverviewPanel from "@/app/components/dashboard/OverviewPanel";
+import { RequestsPanel, UsersPanel } from "@/app/components/dashboard/AdminPanels";
+import { dashboardTheme } from "@/app/components/dashboard/theme";
 
-export default function Dashboard() {
+const baseNav: DashboardNavItem[] = [{ key: "overview", label: "Dashboard", icon: "□" }];
+const adminNav: DashboardNavItem[] = [
+  { key: "requests", label: "Booking Requests", icon: "◇" },
+  { key: "users", label: "Users", icon: "◈" },
+];
+
+export default function DashboardPage() {
+  const router = useRouter();
+
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState("Checking authentication...");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const [activePanel, setActivePanel] = useState<DashboardNavKey>("overview");
+
+  const [bookings, setBookings] = useState<BookingRecord[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingsError, setBookingsError] = useState("");
+
+  const [users, setUsers] = useState<UserRecord[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState("");
 
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges((currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        setStatus("Welcome back, " + currentUser.name + "!");
+        setStatus(`Welcome back, ${currentUser.name}!`);
       } else {
         setUser(null);
         setStatus("Redirecting to login...");
-        router.push("/login");
+        router.replace("/login");
       }
     });
 
     return () => unsubscribe();
   }, [router]);
 
+  useEffect(() => {
+    if (!user || user.role !== "admin") return;
+
+    const loadAdminData = async () => {
+      setBookingsLoading(true);
+      setUsersLoading(true);
+      setBookingsError("");
+      setUsersError("");
+
+      try {
+        const bookingsResponse = await fetch("/api/requests");
+        const bookingsData = (await bookingsResponse.json()) as {
+          bookings?: BookingRecord[];
+          message?: string;
+        };
+
+        if (!bookingsResponse.ok) {
+          throw new Error(bookingsData.message || "Failed to fetch booking requests");
+        }
+
+        setBookings(bookingsData.bookings ?? []);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to fetch booking requests";
+        setBookingsError(message);
+      } finally {
+        setBookingsLoading(false);
+      }
+
+      try {
+        const allUsers = await getAllUsers();
+        setUsers(allUsers);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to fetch users";
+        setUsersError(message);
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+
+    void loadAdminData();
+  }, [user]);
+
+  const stats = useMemo(() => {
+    const pending = bookings.filter((item) => item.status === "pending").length;
+    const confirmed = bookings.filter((item) => item.status === "confirmed").length;
+
+    return [
+      { label: "Total Bookings", value: String(bookings.length), color: dashboardTheme.primary },
+      { label: "Pending Requests", value: String(pending), color: "#d97706" },
+      { label: "Confirmed Trips", value: String(confirmed), color: dashboardTheme.secondary },
+      { label: "Registered Users", value: String(users.length), color: "#8b5cf6" },
+    ];
+  }, [bookings, users]);
+
+  const navigation = user?.role === "admin" ? [...baseNav, ...adminNav] : baseNav;
+
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) return dateString;
+    return parsed.toLocaleDateString();
+  };
+
   const handleLogout = async () => {
-    setLoading(true);
+    setLoggingOut(true);
     try {
       await logoutUser();
-      router.push("/login");
+      router.replace("/login");
     } catch (error) {
       console.error(error);
-      setStatus("Logout failed, please try again.");
+      setStatus("Logout failed. Please try again.");
     } finally {
-      setLoading(false);
+      setLoggingOut(false);
     }
   };
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center text-gray-500">{status}</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: dashboardTheme.pageBg }}>
+        <p style={{ color: dashboardTheme.textMuted }}>{status}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
-        <p className="text-gray-600 mb-6">{status}</p>
+    <div className="min-h-screen" style={{ backgroundColor: dashboardTheme.pageBg, color: dashboardTheme.textDark }}>
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        <DashboardSidebar
+          items={navigation}
+          activeKey={activePanel}
+          onSelect={setActivePanel}
+          email={user.email}
+          loggingOut={loggingOut}
+          onLogout={handleLogout}
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-xl border border-gray-200 p-4">
-            <h2 className="text-lg font-semibold">Profile</h2>
-            <p className="text-sm text-gray-600">Name: {user.name}</p>
-            <p className="text-sm text-gray-600">Email: {user.email}</p>
-          </div>
+        <main className="flex-1">
+          <section className="p-4 md:p-8 space-y-6">
+            <article className="rounded-xl border bg-white px-5 py-4 shadow-sm" style={{ borderColor: dashboardTheme.border }}>
+              <h2 className="text-xl font-semibold" style={{ color: dashboardTheme.textDark }}>Dashboard</h2>
+              <p className="text-sm" style={{ color: dashboardTheme.textMuted }}>{status}</p>
+            </article>
 
-          <div className="rounded-xl border border-gray-200 p-4">
-            <h2 className="text-lg font-semibold">Quick Actions</h2>
-            <button
-              onClick={handleLogout}
-              disabled={loading}
-              className="mt-3 w-full rounded-lg bg-red-600 text-white py-2 font-semibold hover:bg-red-700 transition"
-            >
-              {loading ? "Logging out..." : "Logout"}
-            </button>
-          </div>
-        </div>
+            <StatsRow stats={stats} />
+
+            {activePanel === "overview" ? (
+              <OverviewPanel user={user} bookings={bookings} />
+            ) : null}
+
+            {activePanel === "requests" && user.role === "admin" ? (
+              <RequestsPanel
+                loading={bookingsLoading}
+                error={bookingsError}
+                bookings={bookings}
+                formatDate={formatDate}
+              />
+            ) : null}
+
+            {activePanel === "users" && user.role === "admin" ? (
+              <UsersPanel
+                loading={usersLoading}
+                error={usersError}
+                users={users}
+                formatDate={formatDate}
+              />
+            ) : null}
+          </section>
+        </main>
       </div>
     </div>
   );

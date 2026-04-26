@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function CTA() {
   return (
-    <section className="bg-blue-600 text-white text-center py-20 px-6">
+    <section className="bg-brand-secondary text-white text-center py-20 px-6">
       <motion.h2
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
@@ -23,7 +23,7 @@ export default function CTA() {
 
       <motion.button
         whileHover={{ scale: 1.05 }}
-        className="mt-6 bg-white text-blue-700 font-semibold px-8 py-4 rounded-xl hover:bg-gray-200 transition"
+        className="mt-6 bg-white text-brand-primary font-semibold px-8 py-4 rounded-xl hover:bg-gray-200 transition"
       >
         Plan My Trip
       </motion.button>

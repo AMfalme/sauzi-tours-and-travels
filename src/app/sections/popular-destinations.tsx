@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { FaStar, FaHeart } from "react-icons/fa";
+import BookingModal from "@/app/components/BookingModal";
 
 const destinations = [
   {
@@ -49,6 +51,14 @@ const destinations = [
 ];
 
 export default function PopularDestinations() {
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState("");
+
+  const openBooking = (packageName: string) => {
+    setSelectedPackage(packageName);
+    setIsBookingOpen(true);
+  };
+
   return (
     <section className="bg-white px-6 md:px-16 py-20">
       {/* Section Title Animation */}
@@ -141,7 +151,13 @@ export default function PopularDestinations() {
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   transition={{ duration: 0.3 }}
-                  className="mt-5 w-full bg-primary-green hover:bg-primary-green/90 text-white py-2 rounded-lg text-sm font-semibold"
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    openBooking(place.name);
+                  }}
+                  className="mt-5 w-full bg-brand-secondary text-white py-2 rounded-lg text-sm font-semibold"
                 >
                   Book Now
                 </motion.button>
@@ -150,6 +166,12 @@ export default function PopularDestinations() {
           </Link>
         ))}
       </motion.div>
+
+      <BookingModal
+        open={isBookingOpen}
+        packageName={selectedPackage}
+        onClose={() => setIsBookingOpen(false)}
+      />
     </section>
   );
 }

@@ -56,7 +56,7 @@ const LoginPage = () => {
 
     if (result.success) {
       setNotification({ type: "success", message: "Login successful! Redirecting..." });
-      setTimeout(() => {
+      setTimeout(async () => {
         router.push("/dashboard");
       }, 700);
     } else {
@@ -160,7 +160,7 @@ const LoginPage = () => {
         <div className="mt-6 space-y-3 text-sm text-center">
           <p>
             <Link
-              href="#"
+              href="/forgot-password"
               className="text-blue-600 hover:underline font-medium"
             >
               Forgot password?

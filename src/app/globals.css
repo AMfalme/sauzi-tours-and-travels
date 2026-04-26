@@ -10,6 +10,12 @@
 :root {
   --font-primary: 'Poppins', sans-serif;
   --font-secondary: 'Open Sans', sans-serif;
+  --brand-primary: #be7500;
+  --brand-primary-hover: #9f6200;
+  --brand-primary-soft: #f7ead7;
+  --brand-secondary: #03774c;
+  --brand-secondary-hover: #02623f;
+  --brand-secondary-soft: #d7f1e6;
 }
 
 /* Apply globally */
@@ -23,13 +29,66 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .bg-primary-green{
-  background-color: #0D9276; /* Example Sauzi Tours brand */
+  background-color: var(--brand-secondary);
 }
 .primary-color{
-  color: var(--bg-primary-green);
+  color: var(--brand-primary);
 }
 .secondary-green{
-  background-color: #0D9276; /* Example Sauzi Tours brand */
+  background-color: var(--brand-secondary);
+}
+
+.text-brand-primary {
+  color: var(--brand-primary);
+}
+
+.text-brand-secondary {
+  color: var(--brand-secondary);
+}
+
+.bg-brand-primary {
+  background-color: var(--brand-primary);
+  color: #fff;
+}
+
+.bg-brand-primary:hover {
+  background-color: var(--brand-primary-hover);
+}
+
+.bg-brand-secondary {
+  background-color: var(--brand-secondary);
+  color: #fff;
+}
+
+.bg-brand-secondary:hover {
+  background-color: var(--brand-secondary-hover);
+}
+
+.bg-brand-primary-soft {
+  background-color: var(--brand-primary-soft);
+}
+
+.bg-brand-secondary-soft {
+  background-color: var(--brand-secondary-soft);
+}
+
+.btn-primary {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-primary-hover) !important;
+  border-color: var(--brand-primary-hover) !important;
+}
+
+.text-primary {
+  color: var(--brand-primary) !important;
+}
+
+.navbar .nav-link.active,
+.navbar .nav-link:hover {
+  color: var(--brand-secondary) !important;
 }
         /* "secondary-green": "#0B6A5B", // Example Sauzi Tours brand
         "accent-yellow": "#F2C94C", // Example Sauzi Tours brand

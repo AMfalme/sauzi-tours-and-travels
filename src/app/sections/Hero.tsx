@@ -93,7 +93,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-blue-50 to-white px-6 md:px-16 py-12 overflow-hidden">
+    <section className="flex flex-col md:flex-row items-center justify-between px-6 md:px-16 py-12 overflow-hidden" style={{ background: "linear-gradient(90deg, var(--brand-primary-soft), #fffdf8)" }}>
      
       {/* LEFT — Form */}
       <motion.div
@@ -104,7 +104,7 @@ export default function HeroSection() {
         className="w-full md:w-1/2 max-w-md space-y-6 z-10"
       >
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
-          Discover <span className="text-blue-600">Kenya</span> & Beyond
+          Discover <span className="text-brand-primary">Kenya</span> & Beyond
         </h1>
 
         <p className="text-gray-600">
@@ -171,7 +171,7 @@ export default function HeroSection() {
                 type="button"
                 onClick={nextStep}
                 disabled={!isStep0Complete()}
-                className={`w-full bg-blue-600 text-white font-semibold rounded-xl py-3 transition-all ${!isStep0Complete() ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"}`}
+                className={`w-full bg-brand-primary text-white font-semibold rounded-xl py-3 transition-all ${!isStep0Complete() ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Next
               </motion.button>
@@ -244,7 +244,7 @@ export default function HeroSection() {
                   whileHover={!isSubmitting ? { scale: 1.03 } : {}}
                   whileTap={!isSubmitting ? { scale: 0.97 } : {}}
                   className={`flex-1 font-semibold rounded-xl py-3 transition-all ${
-                    isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-white"
+                    isSubmitting ? "bg-orange-300 cursor-not-allowed" : "bg-brand-primary text-white"
                   }`}
                 >
                   {isSubmitting ? "Sending request..." : "Submit Request"}

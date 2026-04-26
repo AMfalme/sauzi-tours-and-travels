@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import BookingModal from "@/app/components/BookingModal";
 
 const packages = [
   {
@@ -34,8 +36,16 @@ const packages = [
 ];
 
 export default function FeaturedPackages() {
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState("");
+
+  const openBooking = (packageName: string) => {
+    setSelectedPackage(packageName);
+    setIsBookingOpen(true);
+  };
+
   return (
-    <section className="bg-gradient-to-b from-white to-blue-50 px-6 md:px-16 py-20">
+    <section className="px-6 md:px-16 py-20" style={{ background: "linear-gradient(180deg, #fffdf8 0%, var(--brand-primary-soft) 100%)" }}>
       <motion.h4
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -80,7 +90,7 @@ export default function FeaturedPackages() {
 
 
                 {/* Price Tag */}
-                <div className="absolute bottom-3 left-3 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-lg shadow-lg">
+                <div className="absolute bottom-3 left-3 bg-brand-primary text-xs font-semibold px-3 py-1 rounded-lg shadow-lg">
                   {pkg.price}
                 </div>
 
@@ -122,7 +132,15 @@ export default function FeaturedPackages() {
 
                 {/* Button Row */}
                 <div className="flex justify-end mt-4">
-                  <button className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      openBooking(pkg.name);
+                    }}
+                    className="px-4 py-2 rounded-lg bg-brand-secondary text-white text-sm transition"
+                  >
                     Book Now
                   </button>
                 </div>
@@ -131,6 +149,12 @@ export default function FeaturedPackages() {
           </Link>
         ))}
       </motion.div>
+
+      <BookingModal
+        open={isBookingOpen}
+        packageName={selectedPackage}
+        onClose={() => setIsBookingOpen(false)}
+      />
     </section>
   );
 }
