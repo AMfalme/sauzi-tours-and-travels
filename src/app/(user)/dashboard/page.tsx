@@ -220,6 +220,7 @@ export default function DashboardPage() {
                 error={usersError}
                 users={users}
                 formatDate={formatDate}
+                currentUserId={user.id}
                 onRoleUpdated={(userId, role) => {
                   setUsers((prev) =>
                     prev.map((item) => (item.id === userId ? { ...item, role } : item))
