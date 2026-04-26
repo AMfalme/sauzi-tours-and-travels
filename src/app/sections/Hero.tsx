@@ -271,7 +271,7 @@ export default function HeroSection() {
           loop
           className="hero-swiper rounded-2xl shadow-lg"
         >
-          {["/images/maasai-mara.jpg","/images/image-1-zebra.jpeg", "/images/image-2-elephant.jpeg"].map((src, index) => {
+          {["/images/simba.png", "/images/watermark.png"].map((src, index) => {
   const floatUp = index % 2 === 0;
 
   return (

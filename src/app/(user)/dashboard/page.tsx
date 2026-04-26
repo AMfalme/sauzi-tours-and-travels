@@ -16,13 +16,20 @@ import DashboardSidebar, {
 } from "@/app/components/dashboard/DashboardSidebar";
 import StatsRow from "@/app/components/dashboard/StatsRow";
 import OverviewPanel from "@/app/components/dashboard/OverviewPanel";
-import { RequestsPanel, UsersPanel } from "@/app/components/dashboard/AdminPanels";
+import {
+  CreatePackagePanel,
+  RequestsPanel,
+  UsersPanel,
+  ViewPackagesPanel,
+} from "@/app/components/dashboard/AdminPanels";
 import { dashboardTheme } from "@/app/components/dashboard/theme";
 
 const baseNav: DashboardNavItem[] = [{ key: "overview", label: "Dashboard", icon: "□" }];
 const adminNav: DashboardNavItem[] = [
   { key: "requests", label: "Booking Requests", icon: "◇" },
   { key: "users", label: "Users", icon: "◈" },
+  { key: "packages", label: "Create Package", icon: "◆" },
+  { key: "view-packages", label: "View Packages", icon: "◉" },
 ];
 
 export default function DashboardPage() {
@@ -33,6 +40,7 @@ export default function DashboardPage() {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const [activePanel, setActivePanel] = useState<DashboardNavKey>("overview");
+  const [requestFilter, setRequestFilter] = useState<"all" | "pending" | "confirmed">("all");
 
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
@@ -105,10 +113,39 @@ export default function DashboardPage() {
     const confirmed = bookings.filter((item) => item.status === "confirmed").length;
 
     return [
-      { label: "Total Bookings", value: String(bookings.length), color: dashboardTheme.primary },
-      { label: "Pending Requests", value: String(pending), color: "#d97706" },
-      { label: "Confirmed Trips", value: String(confirmed), color: dashboardTheme.secondary },
-      { label: "Registered Users", value: String(users.length), color: "#8b5cf6" },
+      {
+        label: "Total Bookings",
+        value: String(bookings.length),
+        color: dashboardTheme.primary,
+        onClick: () => {
+          setRequestFilter("all");
+          setActivePanel("requests");
+        },
+      },
+      {
+        label: "Pending Requests",
+        value: String(pending),
+        color: "#d97706",
+        onClick: () => {
+          setRequestFilter("pending");
+          setActivePanel("requests");
+        },
+      },
+      {
+        label: "Confirmed Trips",
+        value: String(confirmed),
+        color: dashboardTheme.secondary,
+        onClick: () => {
+          setRequestFilter("confirmed");
+          setActivePanel("requests");
+        },
+      },
+      {
+        label: "Registered Users",
+        value: String(users.length),
+        color: "#8b5cf6",
+        onClick: () => setActivePanel("users"),
+      },
     ];
   }, [bookings, users]);
 
@@ -173,6 +210,7 @@ export default function DashboardPage() {
                 error={bookingsError}
                 bookings={bookings}
                 formatDate={formatDate}
+                filter={requestFilter}
               />
             ) : null}
 
@@ -182,8 +220,17 @@ export default function DashboardPage() {
                 error={usersError}
                 users={users}
                 formatDate={formatDate}
+                onRoleUpdated={(userId, role) => {
+                  setUsers((prev) =>
+                    prev.map((item) => (item.id === userId ? { ...item, role } : item))
+                  );
+                }}
               />
             ) : null}
+
+            {activePanel === "packages" && user.role === "admin" ? <CreatePackagePanel /> : null}
+
+            {activePanel === "view-packages" && user.role === "admin" ? <ViewPackagesPanel /> : null}
           </section>
         </main>
       </div>

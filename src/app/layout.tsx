@@ -1,6 +1,5 @@
 import "./globals.css";
 
-import LoginSlideModal from "./components/loginPrompt";
 export const metadata = {
   title: "Sauzi Tours and Travels",
   description: "Sauzi Tours and Travels",
@@ -22,7 +21,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LoginSlideModal />
         {children}
       </body>
     </html>
