@@ -176,18 +176,6 @@ const LoginPage = () => {
             </Link>
           </p>
         </div>
-
-        {/* Info Box */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-gray-700"
-        >
-          <p className="font-semibold text-blue-800 mb-2">Demo Credentials:</p>
-          <p>Email: demo@sauzi.com</p>
-          <p>Password: demo123456</p>
-        </motion.div>
       </motion.div>
     </div>
   );

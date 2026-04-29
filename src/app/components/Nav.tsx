@@ -8,6 +8,7 @@ import { logoutUser, subscribeToAuthChanges } from "@/app/lib/auth";
 
 export default function Navbar() {
   const [user, setUser] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const router = useRouter();
 
@@ -19,11 +20,30 @@ export default function Navbar() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const onEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onEsc);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onEsc);
+    };
+  }, [mobileMenuOpen]);
+
   const handleLogout = async () => {
     try {
       await logoutUser();
       setNotification("Logged out successfully.");
       setUser(false);
+      setMobileMenuOpen(false);
       setTimeout(() => {
         setNotification(null);
         router.push("/login");
@@ -53,7 +73,13 @@ export default function Navbar() {
           />
         </Link>
         <div className="lg:hidden">
-          <button className="navbar-burger flex items-center text-blue-600 p-3">
+          <button
+            className="navbar-burger flex items-center text-blue-600 p-3"
+            type="button"
+            aria-label="Open menu"
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen(true)}
+          >
             <svg className="block h-4 w-4 fill-current" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <title>Mobile menu</title>
               <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
@@ -139,9 +165,18 @@ export default function Navbar() {
           </div>
         )}
       </nav>
-      <div className="navbar-menu relative z-50 hidden">
-        <div className="navbar-backdrop fixed inset-0 bg-gray-800 opacity-25"></div>
-        <nav className="fixed top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-white border-r overflow-y-auto">
+      <div
+        className={`navbar-menu fixed inset-0 z-50 ${mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+        aria-hidden={!mobileMenuOpen}
+      >
+        <div
+          className={`navbar-backdrop absolute inset-0 bg-gray-800 transition-opacity duration-300 ${mobileMenuOpen ? "opacity-25" : "opacity-0"}`}
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        ></div>
+        <nav
+          className={`absolute top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-white border-r overflow-y-auto transition-transform duration-300 ease-out ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
+        >
           <div className="flex items-center mb-8">
             <Link className="mr-auto text-3xl font-bold leading-none" href="/">
               <Image
@@ -152,7 +187,12 @@ export default function Navbar() {
                 height={75}
               />
             </Link>
-            <button className="navbar-close">
+            <button
+              className="navbar-close"
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <svg className="h-6 w-6 text-gray-400 cursor-pointer hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
@@ -161,27 +201,27 @@ export default function Navbar() {
           <div>
             <ul>
               <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/">
+                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/" onClick={() => setMobileMenuOpen(false)}>
                   HOME
                 </Link>
               </li>
               <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/about">
+                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/about" onClick={() => setMobileMenuOpen(false)}>
                   ABOUT US
                 </Link>
               </li>
               <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/tours">
+                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/tours" onClick={() => setMobileMenuOpen(false)}>
                   TOURS
                 </Link>
               </li>
               <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/destinations">
+                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/destinations" onClick={() => setMobileMenuOpen(false)}>
                   DESTINATIONS
                 </Link>
               </li>
               <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/contact">
+                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/contact" onClick={() => setMobileMenuOpen(false)}>
                   CONTACT us
                 </Link>
               </li>
@@ -191,7 +231,7 @@ export default function Navbar() {
             <div className="pt-6">
               {user ? (
                 <>
-                  <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/dashboard">
+                  <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                     DASHBOARD
                   </Link>
                   <button
@@ -203,10 +243,10 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/login">
+                  <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/login" onClick={() => setMobileMenuOpen(false)}>
                     SIGN IN
                   </Link>
-                  <Link className="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-blue-600 hover:bg-blue-700 rounded-full uppercase no-underline" href="/register">
+                  <Link className="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-blue-600 hover:bg-blue-700 rounded-full uppercase no-underline" href="/register" onClick={() => setMobileMenuOpen(false)}>
                     SIGN UP
                   </Link>
                 </>

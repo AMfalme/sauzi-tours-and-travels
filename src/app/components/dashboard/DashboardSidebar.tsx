@@ -24,6 +24,7 @@ type DashboardSidebarProps = {
   email: string;
   loggingOut: boolean;
   onLogout: () => void;
+  onCloseMobile?: () => void;
 };
 
 export default function DashboardSidebar({
@@ -33,13 +34,25 @@ export default function DashboardSidebar({
   email,
   loggingOut,
   onLogout,
+  onCloseMobile,
 }: DashboardSidebarProps) {
   return (
     <aside
-      className="w-full lg:w-72 border-r flex flex-col"
+      className="h-[100dvh] min-h-screen w-full lg:w-72 border-r flex flex-col overflow-y-auto"
       style={{ backgroundColor: dashboardTheme.sidebarBg, borderColor: "#1d4a3b" }}
     >
       <div className="px-5 py-5 border-b" style={{ borderColor: "#1d4a3b" }}>
+        <div className="mb-3 flex items-center justify-end lg:hidden">
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            className="rounded-md px-2 py-1 text-xs font-semibold text-white/90 hover:bg-emerald-900/60"
+            aria-label="Close sidebar"
+          >
+            Close
+          </button>
+        </div>
+
         <Link href="/" className="inline-flex items-center gap-3">
           <Image src="/images/sauzi-logo-img.png" alt="Sauzi Tours" width={96} height={40} priority />
           <div>
@@ -61,7 +74,10 @@ export default function DashboardSidebar({
             <button
               key={item.key}
               type="button"
-              onClick={() => onSelect(item.key)}
+              onClick={() => {
+                onSelect(item.key);
+                onCloseMobile?.();
+              }}
               className="w-full text-left px-3 py-2 rounded-lg text-sm transition"
               style={{
                 backgroundColor: active ? dashboardTheme.primary : "transparent",

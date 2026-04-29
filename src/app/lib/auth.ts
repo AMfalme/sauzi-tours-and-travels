@@ -8,7 +8,7 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "./firebase";
-import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
 export type User = {
@@ -16,12 +16,19 @@ export type User = {
   name: string;
   email: string;
   role: "user" | "admin";
+  phone: string;
+  location: string;
+  bio: string;
 };
 
 export type UserRecord = User & {
   createdAt?: string | null;
   updatedAt?: string | null;
 };
+
+function normalizeText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
 
 export async function loginWithEmail(
   email: string,
@@ -80,6 +87,9 @@ export async function signupWithEmail(
       name: name,
       email: email,
       role: "user",
+      phone: "",
+      location: "",
+      bio: "",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -166,6 +176,9 @@ export async function getCurrentUser(): Promise<User | null> {
         name: userData.name || firebaseUser.displayName || "User",
         email: firebaseUser.email || "",
         role: userData.role || "user",
+        phone: normalizeText(userData.phone),
+        location: normalizeText(userData.location),
+        bio: normalizeText(userData.bio),
       };
     } else {
       // Return basic user info if no Firestore doc exists
@@ -174,6 +187,9 @@ export async function getCurrentUser(): Promise<User | null> {
         name: firebaseUser.displayName || "User",
         email: firebaseUser.email || "",
         role: "user",
+        phone: "",
+        location: "",
+        bio: "",
       };
     }
   } catch (error) {
@@ -183,6 +199,9 @@ export async function getCurrentUser(): Promise<User | null> {
       name: firebaseUser.displayName || "User",
       email: firebaseUser.email || "",
       role: "user",
+      phone: "",
+      location: "",
+      bio: "",
     };
   }
 }
@@ -202,6 +221,9 @@ export async function getUserByUid(uid: string): Promise<User | null> {
       name: userData.name || "User",
       email: userData.email || "",
       role: userData.role || "user",
+      phone: normalizeText(userData.phone),
+      location: normalizeText(userData.location),
+      bio: normalizeText(userData.bio),
     };
   } catch (error) {
     console.error("Error fetching user by uid:", error);
@@ -221,6 +243,9 @@ export async function getAllUsers(): Promise<UserRecord[]> {
         name: userData.name || "User",
         email: userData.email || "",
         role: userData.role || "user",
+        phone: normalizeText(userData.phone),
+        location: normalizeText(userData.location),
+        bio: normalizeText(userData.bio),
         createdAt: userData.createdAt?.toDate?.()?.toISOString?.() ?? null,
         updatedAt: userData.updatedAt?.toDate?.()?.toISOString?.() ?? null,
       };
@@ -229,6 +254,88 @@ export async function getAllUsers(): Promise<UserRecord[]> {
     console.error("Error fetching users:", error);
     return [];
   }
+}
+
+export async function updateCurrentUserProfileDetails(input: {
+  name: string;
+  phone: string;
+  location: string;
+  bio: string;
+}): Promise<{ success: boolean; message: string; user?: User }> {
+  const firebaseUser = auth.currentUser;
+  if (!firebaseUser) {
+    return { success: false, message: "You must be logged in to update your profile." };
+  }
+
+  const normalizedName = input.name.trim();
+  const normalizedPhone = input.phone.trim();
+  const normalizedLocation = input.location.trim();
+  const normalizedBio = input.bio.trim();
+
+  if (!normalizedName) {
+    return { success: false, message: "Name is required." };
+  }
+
+  try {
+    await updateProfile(firebaseUser, { displayName: normalizedName });
+
+    const userDocRef = doc(db, "users", firebaseUser.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      await updateDoc(userDocRef, {
+        name: normalizedName,
+        phone: normalizedPhone,
+        location: normalizedLocation,
+        bio: normalizedBio,
+        updatedAt: serverTimestamp(),
+      });
+    } else {
+      await setDoc(userDocRef, {
+        uid: firebaseUser.uid,
+        name: normalizedName,
+        email: firebaseUser.email || "",
+        role: "user",
+        phone: normalizedPhone,
+        location: normalizedLocation,
+        bio: normalizedBio,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    const refreshedUser = await getCurrentUser();
+
+    return {
+      success: true,
+      message: "Profile updated successfully.",
+      user: refreshedUser ?? {
+        id: firebaseUser.uid,
+        name: normalizedName,
+        email: firebaseUser.email || "",
+        role: "user",
+        phone: normalizedPhone,
+        location: normalizedLocation,
+        bio: normalizedBio,
+      },
+    };
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return { success: false, message: "Failed to update profile." };
+  }
+}
+
+export async function updateCurrentUserProfileName(
+  name: string
+): Promise<{ success: boolean; message: string; user?: User }> {
+  const current = await getCurrentUser();
+
+  return updateCurrentUserProfileDetails({
+    name,
+    phone: current?.phone || "",
+    location: current?.location || "",
+    bio: current?.bio || "",
+  });
 }
 
 export function subscribeToAuthChanges(

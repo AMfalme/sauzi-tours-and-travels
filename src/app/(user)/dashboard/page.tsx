@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [loggingOut, setLoggingOut] = useState(false);
 
   const [activePanel, setActivePanel] = useState<DashboardNavKey>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [requestFilter, setRequestFilter] = useState<"all" | "pending" | "confirmed">("all");
 
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
@@ -171,6 +172,11 @@ export default function DashboardPage() {
     }
   };
 
+  const handlePanelSelect = (panel: DashboardNavKey) => {
+    setActivePanel(panel);
+    setSidebarOpen(false);
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: dashboardTheme.pageBg }}>
@@ -182,17 +188,42 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: dashboardTheme.pageBg, color: dashboardTheme.textDark }}>
       <div className="flex min-h-screen flex-col lg:flex-row">
-        <DashboardSidebar
-          items={navigation}
-          activeKey={activePanel}
-          onSelect={setActivePanel}
-          email={user.email}
-          loggingOut={loggingOut}
-          onLogout={handleLogout}
+        <div
+          className={`fixed inset-0 z-40 bg-black/40 transition-opacity lg:hidden ${sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
         />
 
-        <main className="flex-1">
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-out lg:fixed lg:top-0 lg:left-0 lg:h-[100dvh] lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+          <DashboardSidebar
+            items={navigation}
+            activeKey={activePanel}
+            onSelect={handlePanelSelect}
+            email={user.email}
+            loggingOut={loggingOut}
+            onLogout={handleLogout}
+            onCloseMobile={() => setSidebarOpen(false)}
+          />
+        </div>
+
+        <main className="flex-1 lg:pl-72">
           <section className="p-4 md:p-8 space-y-6">
+            <article className="lg:hidden rounded-xl border bg-white px-4 py-3 shadow-sm flex items-center justify-between" style={{ borderColor: dashboardTheme.border }}>
+              <div>
+                <p className="text-xs uppercase tracking-wide" style={{ color: dashboardTheme.textMuted }}>Control Panel</p>
+                <p className="text-sm font-medium" style={{ color: dashboardTheme.textDark }}>{user.email}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="rounded-lg px-3 py-2 text-sm font-medium text-white"
+                style={{ backgroundColor: dashboardTheme.primary }}
+                aria-label="Open sidebar menu"
+              >
+                Menu
+              </button>
+            </article>
+
             <article className="rounded-xl border bg-white px-5 py-4 shadow-sm" style={{ borderColor: dashboardTheme.border }}>
               <h2 className="text-xl font-semibold" style={{ color: dashboardTheme.textDark }}>Dashboard</h2>
               <p className="text-sm" style={{ color: dashboardTheme.textMuted }}>{status}</p>
@@ -201,7 +232,14 @@ export default function DashboardPage() {
             <StatsRow stats={stats} />
 
             {activePanel === "overview" ? (
-              <OverviewPanel user={user} bookings={bookings} />
+              <OverviewPanel
+                user={user}
+                bookings={bookings}
+                onProfileUpdated={(updatedUser) => {
+                  setUser(updatedUser);
+                  setStatus(`Welcome back, ${updatedUser.name}!`);
+                }}
+              />
             ) : null}
 
             {activePanel === "requests" && user.role === "admin" ? (
