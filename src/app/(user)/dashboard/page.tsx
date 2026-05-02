@@ -252,6 +252,17 @@ export default function DashboardPage() {
               />
             ) : null}
 
+
+            {activePanel === "bookings" && user.role === "admin" ? (
+              <RequestsPanel
+                loading={bookingsLoading}
+                error={bookingsError}
+                bookings={bookings}
+                formatDate={formatDate}
+                filter={requestFilter}
+              />
+            ) : null}
+
             {activePanel === "users" && user.role === "admin" ? (
               <UsersPanel
                 loading={usersLoading}

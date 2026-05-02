@@ -3,14 +3,13 @@
 import type { BookingRecord } from "@/app/lib/bookings";
 import type { UserRecord } from "@/app/lib/auth";
 import { useEffect, useState } from "react";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import {
   PACKAGE_CATEGORIES,
   type PackageRecord,
   type PackageStatus,
 } from "@/app/lib/packages";
 import { dashboardTheme } from "@/app/components/dashboard/theme";
-import { storage } from "@/app/lib/firebase";
+import { ImageUploadManager, uploadImagesToCloudinary } from "@/app/components/dashboard/ImageUploadManager";
 
 type RequestsPanelProps = {
   loading: boolean;
@@ -257,7 +256,6 @@ const initialPackageForm: PackageFormState = {
 export function CreatePackagePanel() {
   const [form, setForm] = useState<PackageFormState>(initialPackageForm);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -278,32 +276,19 @@ export function CreatePackagePanel() {
     setErrorMessage("");
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? []);
+  const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setSuccessMessage("");
     setErrorMessage("");
   };
 
-  const uploadSelectedImages = async (): Promise<string[]> => {
-    if (selectedFiles.length === 0) return [];
-
-    setUploadingImages(true);
+  const handleUploadImages = async () => {
     try {
-      const uploads = await Promise.all(
-        selectedFiles.map(async (file) => {
-          const safeName = file.name.replace(/\s+/g, "-").toLowerCase();
-          const storageRef = ref(
-            storage,
-            `packages/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`
-          );
-          await uploadBytes(storageRef, file);
-          return getDownloadURL(storageRef);
-        })
-      );
-
-      setUploadedImageUrls(uploads);
-      return uploads;
+      setUploadingImages(true);
+      await uploadImagesToCloudinary(selectedFiles);
+      setSelectedFiles([]);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Failed to upload images");
     } finally {
       setUploadingImages(false);
     }
@@ -326,7 +311,6 @@ export function CreatePackagePanel() {
         throw new Error("Star rating for popular packages must be a number between 0 and 5.");
       }
 
-      const uploadedUrls = await uploadSelectedImages();
       const manualUrls = form.images
         .split(",")
         .map((item) => item.trim())
@@ -347,7 +331,7 @@ export function CreatePackagePanel() {
           duration: form.duration,
           featured: form.featured,
           status: form.status,
-          images: [...manualUrls, ...uploadedUrls],
+          images: manualUrls,
           description: form.description,
           includes: form.includes
             .split(",")
@@ -365,7 +349,6 @@ export function CreatePackagePanel() {
       setSuccessMessage("Package created successfully.");
       setForm(initialPackageForm);
       setSelectedFiles([]);
-      setUploadedImageUrls([]);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to create package";
       setErrorMessage(message);
@@ -501,35 +484,26 @@ export function CreatePackagePanel() {
           </label>
         </div>
 
-        <label className="block text-sm" style={{ color: dashboardTheme.textMuted }}>
-          Image URLs (comma separated)
-          <input
-            name="images"
-            value={form.images}
-            onChange={handleChange}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
-            style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textDark }}
-            placeholder="https://... , https://..."
-          />
-        </label>
-
-        <label className="block text-sm" style={{ color: dashboardTheme.textMuted }}>
-          Upload Images
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileSelect}
-            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
-            style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textDark }}
-          />
-          <p className="mt-1 text-xs" style={{ color: dashboardTheme.textMuted }}>
-            Selected: {selectedFiles.length} file(s)
-          </p>
-          {uploadedImageUrls.length > 0 ? (
-            <p className="mt-1 text-xs text-emerald-700">Uploaded: {uploadedImageUrls.length} image(s)</p>
-          ) : null}
-        </label>
+        <ImageUploadManager
+          existingImages={form.images
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)}
+          selectedFiles={selectedFiles}
+          isUploading={uploadingImages}
+          onFilesSelected={handleFilesSelected}
+          onImageRemoved={(index) => {
+            const urls = form.images
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean);
+            urls.splice(index, 1);
+            setForm((prev) => ({ ...prev, images: urls.join(", ") }));
+          }}
+          onUpload={handleUploadImages}
+          showUploadButton={true}
+          maxColumns="3"
+        />
 
         <label className="block text-sm" style={{ color: dashboardTheme.textMuted }}>
           Description
@@ -561,11 +535,11 @@ export function CreatePackagePanel() {
 
         <button
           type="submit"
-          disabled={loading || uploadingImages}
+          disabled={loading}
           className="rounded-lg px-4 py-2 text-white text-sm font-medium disabled:opacity-70"
           style={{ backgroundColor: dashboardTheme.primary }}
         >
-          {uploadingImages ? "Uploading images..." : loading ? "Creating package..." : "Create Package"}
+          {loading ? "Creating package..." : "Create Package"}
         </button>
       </form>
     </article>
@@ -580,6 +554,8 @@ export function ViewPackagesPanel() {
   const [categoryFilter, setCategoryFilter] = useState<"all" | PackageRecord["category"]>("all");
   const [featuredFilter, setFeaturedFilter] = useState<"all" | "featured">("all");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editSelectedFiles, setEditSelectedFiles] = useState<File[]>([]);
+  const [editUploadingImages, setEditUploadingImages] = useState(false);
   const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; title: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editedForm, setEditedForm] = useState({
@@ -633,6 +609,7 @@ export function ViewPackagesPanel() {
 
   const startEdit = (item: PackageRecord) => {
     setEditingId(item.id);
+    setEditSelectedFiles([]);
     setEditedForm({
       title: item.title,
       category: item.category,
@@ -651,6 +628,7 @@ export function ViewPackagesPanel() {
 
   const cancelEdit = () => {
     setEditingId(null);
+    setEditSelectedFiles([]);
     setEditedForm({
       title: "",
       category: "safari",
@@ -674,6 +652,24 @@ export function ViewPackagesPanel() {
     setEditedForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleEditFilesSelected = (files: File[]) => {
+    setEditSelectedFiles(files);
+    setErrorMessage("");
+    setSuccessMessage("");
+  };
+
+  const handleEditUploadImages = async () => {
+    try {
+      setEditUploadingImages(true);
+      await uploadImagesToCloudinary(editSelectedFiles);
+      setEditSelectedFiles([]);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Failed to upload images");
+    } finally {
+      setEditUploadingImages(false);
+    }
+  };
+
   const saveEdit = async (id: string) => {
     try {
       setErrorMessage("");
@@ -686,6 +682,11 @@ export function ViewPackagesPanel() {
       ) {
         throw new Error("Star rating for popular packages must be a number between 0 and 5.");
       }
+
+      const existingUrls = editedForm.images
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
 
       const response = await fetch("/api/packages", {
         method: "PUT",
@@ -710,10 +711,7 @@ export function ViewPackagesPanel() {
             .split(",")
             .map((item) => item.trim())
             .filter(Boolean),
-          images: editedForm.images
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
+          images: existingUrls,
         }),
       });
 
@@ -835,18 +833,23 @@ export function ViewPackagesPanel() {
             <table className="min-w-full table-fixed text-sm">
               <thead>
                 <tr className="text-left border-b" style={{ color: dashboardTheme.textMuted, borderColor: dashboardTheme.border }}>
-                  <th className="w-[30%] py-3 pr-4 font-medium">Title</th>
-                  <th className="w-[16%] py-3 pr-4 font-medium">Category</th>
-                  <th className="w-[10%] py-3 pr-4 font-medium">Rating</th>
-                  <th className="w-[14%] py-3 pr-4 font-medium">Price</th>
-                  <th className="w-[14%] py-3 pr-4 font-medium">Status</th>
-                  <th className="w-[10%] py-3 pr-4 font-medium">Featured</th>
-                  <th className="w-[16%] py-3 pr-4 font-medium">Actions</th>
+                  <th className="w-[20%] py-3 pr-4 font-medium">Title</th>
+                  <th className="w-[12%] py-3 pr-4 font-medium">Image</th>
+                  <th className="w-[14%] py-3 pr-4 font-medium">Category</th>
+                  <th className="w-[8%] py-3 pr-4 font-medium">Rating</th>
+                  <th className="w-[12%] py-3 pr-4 font-medium">Price</th>
+                  <th className="w-[12%] py-3 pr-4 font-medium">Status</th>
+                  <th className="w-[8%] py-3 pr-4 font-medium">Featured</th>
+                  <th className="w-[14%] py-3 pr-4 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPackages.map((item) => {
                   const isEditing = editingId === item.id;
+                  const currentEditedImages = editedForm.images
+                    .split(",")
+                    .map((imageUrl) => imageUrl.trim())
+                    .filter(Boolean);
 
                   return (
                     <>
@@ -855,6 +858,21 @@ export function ViewPackagesPanel() {
                         style={{ borderColor: "#f1f5f9" }}
                       >
                         <td className="py-3 pr-4 align-top break-words" style={{ color: dashboardTheme.textDark }}>{item.title}</td>
+                        <td className="py-3 pr-4 align-top">
+                          {item.images && item.images.length > 0 ? (
+                            <div className="w-16 h-12 rounded border overflow-hidden" style={{ borderColor: dashboardTheme.border }}>
+                              <img
+                                src={item.images[0]}
+                                alt="Package thumbnail"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-12 rounded border flex items-center justify-center bg-slate-50 text-xs" style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textMuted }}>
+                              No image
+                            </div>
+                          )}
+                        </td>
                         <td className="py-3 pr-4 align-top capitalize whitespace-nowrap" style={{ color: dashboardTheme.textDark }}>{item.category}</td>
                         <td className="py-3 pr-4 align-top whitespace-nowrap" style={{ color: dashboardTheme.textDark }}>
                           {item.starRating === null ? "-" : item.starRating.toFixed(1)}
@@ -941,7 +959,23 @@ export function ViewPackagesPanel() {
 
                               <textarea name="description" value={editedForm.description} onChange={handleEditField} className="mt-3 w-full rounded border px-3 py-2 text-sm min-h-20 bg-white" style={{ borderColor: dashboardTheme.border }} placeholder="Description" />
                               <textarea name="includes" value={editedForm.includes} onChange={handleEditField} className="mt-3 w-full rounded border px-3 py-2 text-sm min-h-16 bg-white" style={{ borderColor: dashboardTheme.border }} placeholder="Includes (comma separated)" />
-                              <textarea name="images" value={editedForm.images} onChange={handleEditField} className="mt-3 w-full rounded border px-3 py-2 text-sm min-h-16 bg-white" style={{ borderColor: dashboardTheme.border }} placeholder="Image URLs (comma separated)" />
+
+                              <div className="mt-3">
+                                <ImageUploadManager
+                                  existingImages={currentEditedImages}
+                                  selectedFiles={editSelectedFiles}
+                                  isUploading={editUploadingImages}
+                                  onFilesSelected={handleEditFilesSelected}
+                                  onImageRemoved={(index) => {
+                                    const urls = [...currentEditedImages];
+                                    urls.splice(index, 1);
+                                    setEditedForm((prev) => ({ ...prev, images: urls.join(", ") }));
+                                  }}
+                                  onUpload={handleEditUploadImages}
+                                  showUploadButton={true}
+                                  maxColumns="3"
+                                />
+                              </div>
 
                               <div className="mt-3 flex items-center gap-2">
                                 <button

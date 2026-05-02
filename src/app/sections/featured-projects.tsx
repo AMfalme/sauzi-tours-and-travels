@@ -1,43 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import BookingModal from "@/app/components/BookingModal";
-
-const packages = [
-  {
-    name: "Mara Adventure",
-    price: "$850",
-    rating: 5,
-    duration: "3 Days | 2 Nights",
-    tag: "Top Seller",
-    highlights: ["Great Migration", "Game Drives", "Luxury Camp"],
-    img: "/images/maasai-mara.jpg",
-  },
-  {
-    name: "Uganda Explorer",
-    price: "$1200",
-    rating: 4,
-    duration: "5 Days | 4 Nights",
-    tag: "New",
-    highlights: ["City Tour", "Dhow Cruise", "Burj Khalifa"],
-    img: "/images/uganda.jpg",
-  },
-  {
-    name: "Diani Coastline",
-    price: "$650",
-    rating: 5,
-    duration: "4 Days | 3 Nights",
-    highlights: ["Snorkeling", "White Sands", "Beach Resort"],
-    img: "/images/diani.jpg",
-  },
-];
+import type { PackageRecord } from "@/app/lib/packages";
 
 export default function FeaturedPackages() {
+  const [packages, setPackages] = useState<PackageRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState("");
+
+  useEffect(() => {
+    const fetchFeaturedPackages = async () => {
+      try {
+        const response = await fetch("/api/packages");
+        const data = (await response.json()) as { packages?: PackageRecord[] };
+        if (data.packages) {
+          const filtered = data.packages.filter(
+            (pkg) => pkg.featured === true && pkg.status === "active"
+          );
+          setPackages(filtered);
+        }
+      } catch (error) {
+        console.error("Failed to fetch featured packages:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchFeaturedPackages();
+  }, []);
 
   const openBooking = (packageName: string) => {
     setSelectedPackage(packageName);
@@ -55,7 +50,16 @@ export default function FeaturedPackages() {
         Featured Packages ✨
       </motion.h4>
 
-      {/* Grid Animation */}
+      {/* Loading State */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600">Loading featured packages...</p>
+        </div>
+      ) : packages.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600">No featured packages available at the moment.</p>
+        </div>
+      ) : (
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -67,7 +71,7 @@ export default function FeaturedPackages() {
         className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3"
       >
         {packages.map((pkg, i) => (
-          <Link href={`/packages/${pkg.name.toLowerCase().replace(/ /g, "-")}`} key={i}>
+          <Link href={`/packages/${pkg.id}`} key={i}>
             <motion.div
               variants={{
                 hidden: { opacity: 0, y: 40 },
@@ -80,24 +84,30 @@ export default function FeaturedPackages() {
               
               {/* IMG wrapper */}
                <div className="relative w-full h-64 overflow-hidden">
-  <Image
-    src={pkg.img}
-    alt={pkg.name}
-    fill
-    className="object-cover group-hover:brightness-90 transition"
-    priority={false}
-  />
+  {pkg.images && pkg.images.length > 0 ? (
+    <Image
+      src={pkg.images[0]}
+      alt={pkg.title}
+      fill
+      className="object-cover group-hover:brightness-90 transition"
+      priority={false}
+    />
+  ) : (
+    <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
+      <span className="text-gray-500">No image</span>
+    </div>
+  )}
 
 
                 {/* Price Tag */}
                 <div className="absolute bottom-3 left-3 bg-brand-primary text-xs font-semibold px-3 py-1 rounded-lg shadow-lg">
-                  {pkg.price}
+                  {pkg.currency} {pkg.price}
                 </div>
 
                 {/* Badge */}
-                {pkg.tag && (
-                  <div className="absolute top-3 left-3 bg-yellow-400 text-gray-900 text-[11px] px-2 py-1 rounded-md font-semibold">
-                    {pkg.tag}
+                {pkg.featured && (
+                  <div className="absolute top-3 left-3 bg-yellow-400 text-gray-900 text[11px] px-2 py-1 rounded-md font-semibold">
+                    Featured
                   </div>
                 )}
 
@@ -112,23 +122,27 @@ export default function FeaturedPackages() {
 
               {/* Card Content */}
               <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-800">{pkg.name}</h3>
+                <h3 className="text-lg font-bold text-gray-800">{pkg.title}</h3>
 
                 {/* ratings */}
-                <div className="flex items-center text-yellow-500 text-sm mt-1">
-                  {"★".repeat(pkg.rating)}
-                  {"☆".repeat(5 - pkg.rating)}
-                </div>
+                {pkg.starRating && (
+                  <div className="flex items-center text-yellow-500 text-sm mt-1">
+                    {"★".repeat(Math.round(pkg.starRating))}
+                    {"☆".repeat(5 - Math.round(pkg.starRating))}
+                  </div>
+                )}
 
                 {/* duration */}
-                <p className="text-gray-500 text-sm mt-1">{pkg.duration}</p>
+                {pkg.duration && <p className="text-gray-500 text-sm mt-1">{pkg.duration}</p>}
 
-                {/* highlights */}
-                <ul className="text-gray-600 text-xs mt-3 space-y-1">
-                  {pkg.highlights.map((h, index) => (
-                    <li key={index}>• {h}</li>
-                  ))}
-                </ul>
+                {/* includes */}
+                {pkg.includes && pkg.includes.length > 0 && (
+                  <ul className="text-gray-600 text-xs mt-3 space-y-1">
+                    {pkg.includes.slice(0, 3).map((item, index) => (
+                      <li key={index}>• {item}</li>
+                    ))}
+                  </ul>
+                )}
 
                 {/* Button Row */}
                 <div className="flex justify-end mt-4">
@@ -137,7 +151,7 @@ export default function FeaturedPackages() {
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      openBooking(pkg.name);
+                      openBooking(pkg.title);
                     }}
                     className="px-4 py-2 rounded-lg bg-brand-secondary text-white text-sm transition"
                   >
@@ -149,6 +163,7 @@ export default function FeaturedPackages() {
           </Link>
         ))}
       </motion.div>
+      )}
 
       <BookingModal
         open={isBookingOpen}

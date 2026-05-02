@@ -1,58 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { FaStar, FaHeart } from "react-icons/fa";
 import BookingModal from "@/app/components/BookingModal";
-
-const destinations = [
-  {
-    name: "Maasai Mara",
-    desc: "Home to the Big Five & The Great Migration.",
-    img: "/images/maasai-mara.jpg",
-    price: "From $450",
-    rating: 4.9,
-    slug: "maasai-mara",
-  },
-  {
-    name: "Diani Beach",
-    desc: "Pristine white sands and vibrant marine life.",
-    img: "/images/diani.jpg",
-    price: "From $380",
-    rating: 4.8,
-    slug: "diani-beach",
-  },
-  {
-    name: "Amboseli",
-    desc: "Iconic views of Mt. Kilimanjaro & ELEPHANTS!",
-    img: "/images/amboseli.jpg",
-    price: "From $420",
-    rating: 4.7,
-    slug: "amboseli",
-  },
-  {
-    name: "Watamu",
-    desc: "Coral reefs & amazing water sports.",
-    img: "/images/watamu.jpg",
-    price: "From $360",
-    rating: 4.9,
-    slug: "watamu",
-  },
-  {
-    name: "Tsavo National Park",
-    desc: "Kenya’s largest protected area – red elephants!",
-    img: "/images/tsavo.jpg",
-    price: "From $420",
-    rating: 4.6,
-    slug: "tsavo",
-  },
-];
+import type { PackageRecord } from "@/app/lib/packages";
 
 export default function PopularDestinations() {
+  const [destinations, setDestinations] = useState<PackageRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState("");
+
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const response = await fetch("/api/packages");
+        const data = (await response.json()) as { packages?: PackageRecord[] };
+        if (data.packages) {
+          const filtered = data.packages.filter(
+            (pkg) => (pkg.category === "destination" || pkg.category === "safari") && pkg.status === "active"
+          );
+          setDestinations(filtered);
+        }
+      } catch (error) {
+        console.error("Failed to fetch destinations:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchDestinations();
+  }, []);
+
+  const getDisplayPrice = (pkg: PackageRecord) => `${pkg.currency} ${pkg.price}`;
+  const getDisplayRating = (pkg: PackageRecord) => pkg.starRating || 4.5;
 
   const openBooking = (packageName: string) => {
     setSelectedPackage(packageName);
@@ -73,6 +57,15 @@ export default function PopularDestinations() {
       </motion.h4>
 
       {/* Grid Animation */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600">Loading destinations...</p>
+        </div>
+      ) : destinations.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600">No destinations available at the moment.</p>
+        </div>
+      ) : (
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -85,8 +78,8 @@ export default function PopularDestinations() {
         }}
         className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3"
       >
-        {destinations.map((place, i) => (
-          <Link key={i} href={`/destinations/${place.slug}`}>
+        {destinations.slice(0, 6).map((pkg, i) => (
+          <Link key={i} href={`/packages/${pkg.id}`}>
             <motion.div
               variants={{
                 hidden: { opacity: 0, y: 40 },
@@ -114,36 +107,42 @@ export default function PopularDestinations() {
                 whileHover={{ scale: 1.06 }}
                 transition={{ duration: 0.4 }}
               >
-                <Image
-                  src={place.img}
-                  alt={place.name}
-                  
-                  fill
-                  className="object-cover w-full h-64 group-hover:brightness-95"
-                  priority={i === 0}
-                />
+                {pkg.images && pkg.images.length > 0 ? (
+                  <Image
+                    src={pkg.images[0]}
+                    alt={pkg.title}
+                    width={400}
+                    height={256}
+                    className="object-cover w-full h-64 group-hover:brightness-95"
+                    priority={i === 0}
+                  />
+                ) : (
+                  <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-500">No image</span>
+                  </div>
+                )}
               </motion.div>
 
               {/* Content */}
               <div className="p-5">
                 <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  {place.name}
+                  {pkg.title}
                 </h3>
 
-                <p className="text-sm text-gray-600">{place.desc}</p>
+                <p className="text-sm text-gray-600 line-clamp-2">{pkg.description}</p>
 
                 <div className="flex items-center justify-between mt-4">
                   {/* Rating */}
                   <div className="flex items-center gap-1">
                     <FaStar className="text-yellow-500 text-sm" />
                     <span className="text-sm font-medium text-gray-700">
-                      {place.rating}
+                      {getDisplayRating(pkg).toFixed(1)}
                     </span>
                   </div>
 
                   {/* Price */}
                   <span className="text-sm font-semibold text-green-600">
-                    {place.price}
+                    {getDisplayPrice(pkg)}
                   </span>
                 </div>
 
@@ -155,7 +154,7 @@ export default function PopularDestinations() {
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    openBooking(place.name);
+                    openBooking(pkg.title);
                   }}
                   className="mt-5 w-full bg-brand-secondary text-white py-2 rounded-lg text-sm font-semibold"
                 >
@@ -166,6 +165,7 @@ export default function PopularDestinations() {
           </Link>
         ))}
       </motion.div>
+      )}
 
       <BookingModal
         open={isBookingOpen}
