@@ -10,6 +10,7 @@ import {
   QueryDocumentSnapshot,
   serverTimestamp,
   Timestamp,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 
@@ -122,4 +123,12 @@ export async function getBookingById(id: string): Promise<BookingRecord | null> 
     createdAt: toIso(data.createdAt),
     updatedAt: toIso(data.updatedAt),
   };
+}
+
+export async function updateBookingStatus(id: string, status: BookingStatus): Promise<void> {
+  const bookingRef = doc(db, BOOKINGS_COLLECTION, id);
+  await updateDoc(bookingRef, {
+    status,
+    updatedAt: serverTimestamp(),
+  });
 }

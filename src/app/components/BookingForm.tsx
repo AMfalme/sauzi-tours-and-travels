@@ -18,6 +18,16 @@ const initialState: BookingFormState = {
   notes: "",
 };
 
+const PACKAGE_BASE_PRICES: Record<string, number> = {
+  "Family Safari": 400,
+  "Beach Escape": 350,
+  "Adventure Trek": 500,
+};
+
+function resolveBookingAmount(packageName: string) {
+  return PACKAGE_BASE_PRICES[packageName] ?? 500;
+}
+
 type BookingFormProps = {
   initialPackageName?: string;
   onSuccess?: () => void;
@@ -57,15 +67,45 @@ export default function BookingForm({ initialPackageName, onSuccess, className }
         body: JSON.stringify(form),
       });
 
-      const data = (await response.json()) as { message?: string };
+      const data = (await response.json()) as {
+        message?: string;
+        booking?: { id: string; email: string };
+      };
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to submit booking");
       }
 
+      const bookingId = data.booking?.id;
+      const bookingEmail = data.booking?.email || form.email;
+
+      if (!bookingId) {
+        throw new Error("Booking was created but payment could not be initialized.");
+      }
+
+      const paymentResponse = await fetch("/api/payments/initiate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: resolveBookingAmount(form.packageName),
+          currency: "KES",
+          email: bookingEmail,
+          bookingId,
+        }),
+      });
+
+      const paymentData = (await paymentResponse.json()) as { paymentUrl?: string; message?: string };
+
+      if (!paymentResponse.ok || !paymentData.paymentUrl) {
+        throw new Error(paymentData.message || "Failed to initialize payment checkout");
+      }
+
       setSuccessMessage("Booking submitted successfully. We will contact you soon.");
       setForm({ ...initialState, packageName: initialPackageName ?? "" });
       onSuccess?.();
+      window.location.href = paymentData.paymentUrl;
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to submit booking right now.";
