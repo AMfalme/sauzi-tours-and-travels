@@ -3,9 +3,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/app/lib/firebase";
-
 import { Input } from "@/app/components/ui/input";
 // import AccountPrompt from "@/app/components/AccountPrompt";
 import Image from "next/image";
@@ -74,18 +71,29 @@ export default function HeroSection() {
 
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, "tour_requests"), {
-        ...form,
-        createdAt: serverTimestamp(),
-        status: "new",
-        source: "multi_step_form",
+      const response = await fetch("/api/tour-requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
       });
-      alert("Request sent! We’ll get back to you shortly.");
+
+      const data = (await response.json()) as {
+        message?: string;
+        requestId?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to submit request");
+      }
+
+      alert("Request sent! We'll get back to you shortly.");
       setForm(initialForm);
       setStep(0);
       setErrors({});
     } catch (err) {
-      console.error("FIRESTORE ERROR:", err);
+      console.error("SUBMIT ERROR:", err);
       alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);

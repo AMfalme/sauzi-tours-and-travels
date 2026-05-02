@@ -3,7 +3,7 @@
 import HeroSection from "../sections/Hero";
 
 import PopularDestinations from "../sections/popular-destinations";
-import FeaturedPackages from "../sections/featured-projects";
+import Tours from "./tours/page";
 import WhyChooseUs from "../sections/why-us";
 import Testimonials from "../sections/testimonials";
 import Gallery from "../sections/gallery";
@@ -14,7 +14,7 @@ export default function Home() {
     <>
     <HeroSection />
     <PopularDestinations />
-    <FeaturedPackages/>
+    <Tours/>
     <WhyChooseUs/>
     <CTA />
     <Testimonials />

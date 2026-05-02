@@ -11,12 +11,25 @@ import {
 import { dashboardTheme } from "@/app/components/dashboard/theme";
 import { ImageUploadManager, uploadImagesToCloudinary } from "@/app/components/dashboard/ImageUploadManager";
 
-type RequestsPanelProps = {
+type TourRequestRecord = {
+  id: string;
+  destination: string;
+  date: string;
+  guests: string;
+  childrenAges: string;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  source: string;
+  createdAt: any;
+};
+
+type TourRequestsPanelProps = {
   loading: boolean;
   error: string;
-  bookings: BookingRecord[];
+  requests: TourRequestRecord[];
   formatDate: (date: string | null | undefined) => string;
-  filter?: "all" | "pending" | "confirmed";
 };
 
 type UsersPanelProps = {
@@ -106,6 +119,59 @@ export function RequestsPanel({ loading, error, bookings, formatDate, filter = "
                     <td className="py-3 pr-4" style={{ color: dashboardTheme.textDark }}>{booking.travelDate}</td>
                     <td className="py-3 pr-4 capitalize" style={{ color: dashboardTheme.secondary }}>{booking.status}</td>
                     <td className="py-3 pr-4" style={{ color: dashboardTheme.textDark }}>{formatDate(booking.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+export function TourRequestsPanel({ loading, error, requests, formatDate }: TourRequestsPanelProps) {
+  return (
+    <article className="rounded-xl border bg-white shadow-sm overflow-hidden" style={{ borderColor: dashboardTheme.border }}>
+      <div className="px-5 py-4 border-b" style={{ borderColor: dashboardTheme.border }}>
+        <h3 className="font-semibold" style={{ color: dashboardTheme.textDark }}>Tour Requests</h3>
+        <p className="text-sm" style={{ color: dashboardTheme.textMuted }}>
+          General tour inquiries from the hero section form.
+        </p>
+      </div>
+
+      <div className="p-5">
+        {loading ? <p className="text-sm" style={{ color: dashboardTheme.textMuted }}>Loading requests...</p> : null}
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
+        {!loading && !error ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left border-b" style={{ color: dashboardTheme.textMuted, borderColor: dashboardTheme.border }}>
+                  <th className="py-3 pr-4 font-medium">Customer</th>
+                  <th className="py-3 pr-4 font-medium">Destination</th>
+                  <th className="py-3 pr-4 font-medium">Travel Date</th>
+                  <th className="py-3 pr-4 font-medium">Guests</th>
+                  <th className="py-3 pr-4 font-medium">Status</th>
+                  <th className="py-3 pr-4 font-medium">Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requests.map((request) => (
+                  <tr key={request.id} className="border-b" style={{ borderColor: "#f1f5f9" }}>
+                    <td className="py-3 pr-4" style={{ color: dashboardTheme.textDark }}>
+                      <div>
+                        <div className="font-medium">{request.name}</div>
+                        <div className="text-xs" style={{ color: dashboardTheme.textMuted }}>{request.email}</div>
+                        {request.phone && <div className="text-xs" style={{ color: dashboardTheme.textMuted }}>{request.phone}</div>}
+                      </div>
+                    </td>
+                    <td className="py-3 pr-4" style={{ color: dashboardTheme.textDark }}>{request.destination}</td>
+                    <td className="py-3 pr-4" style={{ color: dashboardTheme.textDark }}>{formatDate(request.date)}</td>
+                    <td className="py-3 pr-4" style={{ color: dashboardTheme.textDark }}>{request.guests}</td>
+                    <td className="py-3 pr-4 capitalize" style={{ color: dashboardTheme.secondary }}>{request.status}</td>
+                    <td className="py-3 pr-4" style={{ color: dashboardTheme.textDark }}>{formatDate(request.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

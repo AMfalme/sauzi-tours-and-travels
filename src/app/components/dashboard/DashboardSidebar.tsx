@@ -6,7 +6,7 @@ import { dashboardTheme } from "@/app/components/dashboard/theme";
 
 export type DashboardNavKey =
   | "overview"
-  | "requests"
+  | "tour-requests"
   | "bookings"
   | "users"
   | "packages"

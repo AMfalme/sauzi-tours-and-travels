@@ -19,6 +19,7 @@ import OverviewPanel from "@/app/components/dashboard/OverviewPanel";
 import {
   CreatePackagePanel,
   RequestsPanel,
+  TourRequestsPanel,
   UsersPanel,
   ViewPackagesPanel,
 } from "@/app/components/dashboard/AdminPanels";
@@ -26,9 +27,10 @@ import { dashboardTheme } from "@/app/components/dashboard/theme";
 
 const baseNav: DashboardNavItem[] = [{ key: "overview", label: "Dashboard", icon: "□" }];
 const adminNav: DashboardNavItem[] = [
-  { key: "requests", label: "Booking Requests", icon: "◇" },
+  { key: "tour-requests", label: "Tour Requests", icon: "◇" },
+  { key: "bookings", label: "Bookings", icon: "◆" },
   { key: "users", label: "Users", icon: "◈" },
-  { key: "packages", label: "Create Package", icon: "◆" },
+  { key: "packages", label: "Create Package", icon: "●" },
   { key: "view-packages", label: "View Packages", icon: "◉" },
 ];
 
@@ -46,6 +48,10 @@ export default function DashboardPage() {
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [bookingsError, setBookingsError] = useState("");
+
+  const [tourRequests, setTourRequests] = useState<any[]>([]);
+  const [tourRequestsLoading, setTourRequestsLoading] = useState(false);
+  const [tourRequestsError, setTourRequestsError] = useState("");
 
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
@@ -71,8 +77,10 @@ export default function DashboardPage() {
 
     const loadAdminData = async () => {
       setBookingsLoading(true);
+      setTourRequestsLoading(true);
       setUsersLoading(true);
       setBookingsError("");
+      setTourRequestsError("");
       setUsersError("");
 
       try {
@@ -83,16 +91,36 @@ export default function DashboardPage() {
         };
 
         if (!bookingsResponse.ok) {
-          throw new Error(bookingsData.message || "Failed to fetch booking requests");
+          throw new Error(bookingsData.message || "Failed to fetch bookings");
         }
 
         setBookings(bookingsData.bookings ?? []);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Failed to fetch booking requests";
+          error instanceof Error ? error.message : "Failed to fetch bookings";
         setBookingsError(message);
       } finally {
         setBookingsLoading(false);
+      }
+
+      try {
+        const tourRequestsResponse = await fetch("/api/tour-requests");
+        const tourRequestsData = (await tourRequestsResponse.json()) as {
+          requests?: any[];
+          message?: string;
+        };
+
+        if (!tourRequestsResponse.ok) {
+          throw new Error(tourRequestsData.message || "Failed to fetch tour requests");
+        }
+
+        setTourRequests(tourRequestsData.requests ?? []);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to fetch tour requests";
+        setTourRequestsError(message);
+      } finally {
+        setTourRequestsLoading(false);
       }
 
       try {
@@ -110,36 +138,34 @@ export default function DashboardPage() {
   }, [user]);
 
   const stats = useMemo(() => {
-    const pending = bookings.filter((item) => item.status === "pending").length;
-    const confirmed = bookings.filter((item) => item.status === "confirmed").length;
+    const pendingBookings = bookings.filter((item) => item.status === "pending").length;
+    const confirmedBookings = bookings.filter((item) => item.status === "confirmed").length;
+    const newRequests = tourRequests.filter((item) => item.status === "new").length;
 
     return [
+      {
+        label: "Tour Requests",
+        value: String(tourRequests.length),
+        color: "#06b6d4",
+        onClick: () => setActivePanel("tour-requests"),
+      },
       {
         label: "Total Bookings",
         value: String(bookings.length),
         color: dashboardTheme.primary,
-        onClick: () => {
-          setRequestFilter("all");
-          setActivePanel("requests");
-        },
+        onClick: () => setActivePanel("bookings"),
       },
       {
-        label: "Pending Requests",
-        value: String(pending),
+        label: "Pending Bookings",
+        value: String(pendingBookings),
         color: "#d97706",
-        onClick: () => {
-          setRequestFilter("pending");
-          setActivePanel("requests");
-        },
+        onClick: () => setActivePanel("bookings"),
       },
       {
         label: "Confirmed Trips",
-        value: String(confirmed),
+        value: String(confirmedBookings),
         color: dashboardTheme.secondary,
-        onClick: () => {
-          setRequestFilter("confirmed");
-          setActivePanel("requests");
-        },
+        onClick: () => setActivePanel("bookings"),
       },
       {
         label: "Registered Users",
@@ -148,16 +174,30 @@ export default function DashboardPage() {
         onClick: () => setActivePanel("users"),
       },
     ];
-  }, [bookings, users]);
+  }, [bookings, tourRequests, users]);
 
   const navigation = user?.role === "admin" ? [...baseNav, ...adminNav] : baseNav;
 
-  const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return "-";
-    const parsed = new Date(dateString);
-    if (Number.isNaN(parsed.getTime())) return dateString;
-    return parsed.toLocaleDateString();
-  };
+ const formatDate = (value: any) => {
+  if (!value) return "-";
+
+  // Firestore Timestamp object
+  if (typeof value === "object" && "seconds" in value) {
+    return new Date(value.seconds * 1000).toLocaleDateString();
+  }
+
+  // Firestore Timestamp class instance
+  if (typeof value?.toDate === "function") {
+    return value.toDate().toLocaleDateString();
+  }
+
+  // Normal string/date
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) return "-";
+
+  return parsed.toLocaleDateString();
+};
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -242,16 +282,14 @@ export default function DashboardPage() {
               />
             ) : null}
 
-            {activePanel === "requests" && user.role === "admin" ? (
-              <RequestsPanel
-                loading={bookingsLoading}
-                error={bookingsError}
-                bookings={bookings}
+            {activePanel === "tour-requests" && user.role === "admin" ? (
+              <TourRequestsPanel
+                loading={tourRequestsLoading}
+                error={tourRequestsError}
+                requests={tourRequests}
                 formatDate={formatDate}
-                filter={requestFilter}
               />
             ) : null}
-
 
             {activePanel === "bookings" && user.role === "admin" ? (
               <RequestsPanel
@@ -259,7 +297,7 @@ export default function DashboardPage() {
                 error={bookingsError}
                 bookings={bookings}
                 formatDate={formatDate}
-                filter={requestFilter}
+                filter="all"
               />
             ) : null}
 
