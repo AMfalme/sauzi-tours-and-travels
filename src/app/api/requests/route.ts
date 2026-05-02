@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createBooking, getAllBookings } from "@/app/lib/bookings";
+import { getAllPackages, updatePackageById } from "@/app/lib/packages";
 
 export async function POST(request: Request) {
   try {
@@ -23,6 +24,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if package has available slots before creating booking
+    const packages = await getAllPackages();
+    const bookedPackage = packages.find(pkg => pkg.title === packageName);
+
+    if (bookedPackage && bookedPackage.availableSlots !== undefined) {
+      if (bookedPackage.availableSlots <= 0) {
+        return NextResponse.json(
+          { message: "This package is fully booked and no longer available." },
+          { status: 400 }
+        );
+      }
+    }
+
     const createdBooking = await createBooking({
       fullName,
       email,
@@ -30,6 +44,19 @@ export async function POST(request: Request) {
       packageName,
       notes: body.notes?.trim() ?? "",
     });
+
+    // Update package slots if applicable
+    try {
+      if (bookedPackage && bookedPackage.availableSlots !== undefined && bookedPackage.availableSlots > 0) {
+        const newAvailableSlots = bookedPackage.availableSlots - 1;
+        await updatePackageById(bookedPackage.id, {
+          availableSlots: newAvailableSlots
+        });
+      }
+    } catch (slotUpdateError) {
+      console.error("Error updating package slots:", slotUpdateError);
+      // Don't fail the booking if slot update fails, just log it
+    }
 
     return NextResponse.json(
       { message: "Booking created successfully", booking: createdBooking },

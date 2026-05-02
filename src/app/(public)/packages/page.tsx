@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link"; 
+import Link from "next/link";
+import { useState, useEffect } from "react";
 import BookingModal from "@/app/components/BookingModal";
+import FeaturedPackages from "@/app/sections/featured-projects";
 
-import type { PackageRecord } from "@/app/lib/packages";
-import { PACKAGE_CATEGORIES, isPackageDisplayable } from "@/app/lib/packages";
+import { PACKAGE_CATEGORIES, type PackageRecord, isPackageDisplayable } from "@/app/lib/packages";
 
-export default function Tours() {
-  
-    const [packages, setPackages] = useState<PackageRecord[]>([]);
+export default function PackagesPage() {
+  const [packages, setPackages] = useState<PackageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -23,9 +23,7 @@ export default function Tours() {
         const response = await fetch("/api/packages");
         const data = (await response.json()) as { packages?: PackageRecord[] };
         if (data.packages) {
-          const filtered = data.packages.filter(
-            (pkg) => pkg.status === "active" && isPackageDisplayable(pkg)
-          );
+          const filtered = data.packages.filter((pkg) => pkg.status === "active" && isPackageDisplayable(pkg));
           setPackages(filtered);
         }
       } catch (error) {
@@ -149,6 +147,7 @@ export default function Tours() {
           ))}
         </div>
         )}
+         <FeaturedPackages/>
       </div>
 
       <BookingModal
@@ -159,5 +158,3 @@ export default function Tours() {
     </section>
   );
 }
-
-

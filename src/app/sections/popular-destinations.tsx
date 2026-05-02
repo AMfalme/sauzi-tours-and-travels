@@ -7,6 +7,7 @@ import Link from "next/link";
 import { FaStar, FaHeart } from "react-icons/fa";
 import BookingModal from "@/app/components/BookingModal";
 import type { PackageRecord } from "@/app/lib/packages";
+import { isPackageDisplayable } from "@/app/lib/packages";
 
 export default function PopularDestinations() {
   const [destinations, setDestinations] = useState<PackageRecord[]>([]);
@@ -21,7 +22,7 @@ export default function PopularDestinations() {
         const data = (await response.json()) as { packages?: PackageRecord[] };
         if (data.packages) {
           const filtered = data.packages.filter(
-            (pkg) => (pkg.category === "destination" || pkg.category === "safari") && pkg.status === "active"
+            (pkg) => (pkg.category === "destination" || pkg.category === "safari") && pkg.status === "active" && isPackageDisplayable(pkg)
           );
           setDestinations(filtered);
         }

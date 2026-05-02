@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import BookingModal from "@/app/components/BookingModal";
 import type { PackageRecord } from "@/app/lib/packages";
+import { isPackageDisplayable } from "@/app/lib/packages";
 
 export default function FeaturedPackages() {
   const [packages, setPackages] = useState<PackageRecord[]>([]);
@@ -20,7 +21,7 @@ export default function FeaturedPackages() {
         const data = (await response.json()) as { packages?: PackageRecord[] };
         if (data.packages) {
           const filtered = data.packages.filter(
-            (pkg) => pkg.featured === true && pkg.status === "active"
+            (pkg) => pkg.featured === true && pkg.status === "active" && isPackageDisplayable(pkg)
           );
           setPackages(filtered);
         }

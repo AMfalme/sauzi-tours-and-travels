@@ -102,6 +102,18 @@ export async function POST(request: Request) {
       images,
       description,
       includes,
+      availabilityStartDate: body.availabilityStartDate ? normalizeText(body.availabilityStartDate) : undefined,
+      availabilityEndDate: body.availabilityEndDate ? normalizeText(body.availabilityEndDate) : undefined,
+      maxSlots:
+        body.maxSlots !== undefined && String(body.maxSlots).trim() !== ""
+          ? Number(body.maxSlots)
+          : undefined,
+      availableSlots:
+        body.availableSlots !== undefined && String(body.availableSlots).trim() !== ""
+          ? Number(body.availableSlots)
+          : undefined,
+      displayStartDate: body.displayStartDate ? normalizeText(body.displayStartDate) : undefined,
+      displayEndDate: body.displayEndDate ? normalizeText(body.displayEndDate) : undefined,
     });
 
     return NextResponse.json(
@@ -197,6 +209,32 @@ export async function PUT(request: Request) {
       updates.includes = Array.isArray(body.includes)
         ? body.includes.map((item) => normalizeText(item)).filter(Boolean)
         : [];
+    }
+
+    // Handle availability and display fields
+    if (body.availabilityStartDate !== undefined) {
+      updates.availabilityStartDate = body.availabilityStartDate ? normalizeText(body.availabilityStartDate) : undefined;
+    }
+    if (body.availabilityEndDate !== undefined) {
+      updates.availabilityEndDate = body.availabilityEndDate ? normalizeText(body.availabilityEndDate) : undefined;
+    }
+    if (body.maxSlots !== undefined) {
+      updates.maxSlots =
+        String(body.maxSlots).trim() !== ""
+          ? Number(body.maxSlots)
+          : undefined;
+    }
+    if (body.availableSlots !== undefined) {
+      updates.availableSlots =
+        String(body.availableSlots).trim() !== ""
+          ? Number(body.availableSlots)
+          : undefined;
+    }
+    if (body.displayStartDate !== undefined) {
+      updates.displayStartDate = body.displayStartDate ? normalizeText(body.displayStartDate) : undefined;
+    }
+    if (body.displayEndDate !== undefined) {
+      updates.displayEndDate = body.displayEndDate ? normalizeText(body.displayEndDate) : undefined;
     }
 
     const updated = await updatePackageById(id, updates);

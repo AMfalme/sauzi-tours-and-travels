@@ -6,6 +6,8 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { collection, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
@@ -147,6 +149,103 @@ export async function forgotPassword(email: string): Promise<{ success: boolean;
       message = "Too many requests. Please wait a minute and try again.";
     } else {
       message = firebaseError.message?firebaseError.message:'';
+    }
+
+    return { success: false, message };
+  }
+}
+
+export async function loginWithGoogle(): Promise<{ success: boolean; message: string; user?: FirebaseUser }> {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
+    const result = await signInWithPopup(auth, provider);
+
+    // Check if user document exists, if not create it
+    const userDocRef = doc(db, "users", result.user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (!userDocSnap.exists()) {
+      // Create user document for new Google user
+      await setDoc(userDocRef, {
+        uid: result.user.uid,
+        name: result.user.displayName || "User",
+        email: result.user.email || "",
+        role: "user",
+        phone: "",
+        location: "",
+        bio: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    return {
+      success: true,
+      message: "Login successful",
+      user: result.user,
+    };
+  } catch (error: unknown) {
+    const firebaseError = error as { code?: string; message?: string };
+    let message = "Google login failed";
+
+    if (firebaseError.code === "auth/popup-closed-by-user") {
+      message = "Login cancelled by user.";
+    } else if (firebaseError.code === "auth/popup-blocked") {
+      message = "Popup blocked by browser. Please allow popups for this site.";
+    } else if (firebaseError.code === "auth/account-exists-with-different-credential") {
+      message = "An account already exists with this email using a different sign-in method.";
+    } else if (firebaseError.message) {
+      message = firebaseError.message;
+    }
+
+    return { success: false, message };
+  }
+}
+
+export async function registerWithGoogle(): Promise<{ success: boolean; message: string; user?: FirebaseUser }> {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
+    const result = await signInWithPopup(auth, provider);
+
+    // Create user document for new Google user
+    const userDocRef = doc(db, "users", result.user.uid);
+    await setDoc(userDocRef, {
+      uid: result.user.uid,
+      name: result.user.displayName || "User",
+      email: result.user.email || "",
+      role: "user",
+      phone: "",
+      location: "",
+      bio: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    return {
+      success: true,
+      message: "Account created successfully",
+      user: result.user,
+    };
+  } catch (error: unknown) {
+    const firebaseError = error as { code?: string; message?: string };
+    let message = "Google registration failed";
+
+    if (firebaseError.code === "auth/popup-closed-by-user") {
+      message = "Registration cancelled by user.";
+    } else if (firebaseError.code === "auth/popup-blocked") {
+      message = "Popup blocked by browser. Please allow popups for this site.";
+    } else if (firebaseError.code === "auth/account-exists-with-different-credential") {
+      message = "An account already exists with this email using a different sign-in method.";
+    } else if (firebaseError.message) {
+      message = firebaseError.message;
     }
 
     return { success: false, message };

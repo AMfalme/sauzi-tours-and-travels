@@ -54,6 +54,13 @@ type PackageFormState = {
   images: string;
   description: string;
   includes: string;
+  // Availability and display fields (all optional)
+  availabilityStartDate: string;
+  availabilityEndDate: string;
+  maxSlots: string;
+  availableSlots: string;
+  displayStartDate: string;
+  displayEndDate: string;
 };
 
 type ToastState = {
@@ -317,6 +324,13 @@ const initialPackageForm: PackageFormState = {
   images: "",
   description: "Amazing wildlife experience...",
   includes: "Transport, Hotel, Meals",
+  // Availability and display fields (empty by default - optional)
+  availabilityStartDate: "",
+  availabilityEndDate: "",
+  maxSlots: "",
+  availableSlots: "",
+  displayStartDate: "",
+  displayEndDate: "",
 };
 
 export function CreatePackagePanel() {
@@ -403,6 +417,13 @@ export function CreatePackagePanel() {
             .split(",")
             .map((item) => item.trim())
             .filter(Boolean),
+          // Availability and display fields (optional)
+          availabilityStartDate: form.availabilityStartDate || undefined,
+          availabilityEndDate: form.availabilityEndDate || undefined,
+          maxSlots: String(form.maxSlots).trim() !== "" ? Number(form.maxSlots) : undefined,
+          availableSlots: String(form.availableSlots).trim() !== "" ? Number(form.availableSlots) : undefined,
+          displayStartDate: form.displayStartDate || undefined,
+          displayEndDate: form.displayEndDate || undefined,
         }),
       });
 
@@ -550,6 +571,93 @@ export function CreatePackagePanel() {
           </label>
         </div>
 
+        {/* Availability and Display Settings */}
+        <div className="border-t pt-4 mt-6" style={{ borderColor: dashboardTheme.border }}>
+          <h4 className="text-sm font-medium mb-3" style={{ color: dashboardTheme.textDark }}>
+            Availability & Display Settings (Optional)
+          </h4>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="text-sm" style={{ color: dashboardTheme.textMuted }}>
+              Availability Start Date
+              <input
+                type="date"
+                name="availabilityStartDate"
+                value={form.availabilityStartDate}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textDark }}
+              />
+            </label>
+
+            <label className="text-sm" style={{ color: dashboardTheme.textMuted }}>
+              Availability End Date
+              <input
+                type="date"
+                name="availabilityEndDate"
+                value={form.availabilityEndDate}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textDark }}
+              />
+            </label>
+
+            <label className="text-sm" style={{ color: dashboardTheme.textMuted }}>
+              Max Slots
+              <input
+                type="number"
+                min="1"
+                name="maxSlots"
+                value={form.maxSlots}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textDark }}
+                placeholder="20"
+              />
+            </label>
+
+            <label className="text-sm" style={{ color: dashboardTheme.textMuted }}>
+              Available Slots
+              <input
+                type="number"
+                min="0"
+                name="availableSlots"
+                value={form.availableSlots}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textDark }}
+                placeholder="15"
+              />
+            </label>
+
+            <label className="text-sm" style={{ color: dashboardTheme.textMuted }}>
+              Display Start Date
+              <input
+                type="date"
+                name="displayStartDate"
+                value={form.displayStartDate}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textDark }}
+              />
+            </label>
+
+            <label className="text-sm" style={{ color: dashboardTheme.textMuted }}>
+              Display End Date
+              <input
+                type="date"
+                name="displayEndDate"
+                value={form.displayEndDate}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                style={{ borderColor: dashboardTheme.border, color: dashboardTheme.textDark }}
+              />
+            </label>
+          </div>
+          <p className="text-xs mt-2" style={{ color: dashboardTheme.textMuted }}>
+            Leave fields empty for packages that should always be available/displayed. Display dates control when packages appear on the frontend.
+          </p>
+        </div>
+
         <ImageUploadManager
           existingImages={form.images
             .split(",")
@@ -637,6 +745,13 @@ export function ViewPackagesPanel() {
     description: "",
     includes: "",
     images: "",
+    // Availability and display fields
+    availabilityStartDate: "",
+    availabilityEndDate: "",
+    maxSlots: "",
+    availableSlots: "",
+    displayStartDate: "",
+    displayEndDate: "",
   });
 
   const fetchPackages = async () => {
@@ -689,6 +804,13 @@ export function ViewPackagesPanel() {
       description: item.description,
       includes: item.includes.join(", "),
       images: item.images.join(", "),
+      // Availability and display fields
+      availabilityStartDate: item.availabilityStartDate || "",
+      availabilityEndDate: item.availabilityEndDate || "",
+      maxSlots: item.maxSlots ? String(item.maxSlots) : "",
+      availableSlots: item.availableSlots ? String(item.availableSlots) : "",
+      displayStartDate: item.displayStartDate || "",
+      displayEndDate: item.displayEndDate || "",
     });
   };
 
@@ -708,6 +830,13 @@ export function ViewPackagesPanel() {
       description: "",
       includes: "",
       images: "",
+      // Availability and display fields
+      availabilityStartDate: "",
+      availabilityEndDate: "",
+      maxSlots: "",
+      availableSlots: "",
+      displayStartDate: "",
+      displayEndDate: "",
     });
   };
 
@@ -778,6 +907,13 @@ export function ViewPackagesPanel() {
             .map((item) => item.trim())
             .filter(Boolean),
           images: existingUrls,
+          // Availability and display fields
+          availabilityStartDate: editedForm.availabilityStartDate || undefined,
+          availabilityEndDate: editedForm.availabilityEndDate || undefined,
+          maxSlots: String(editedForm.maxSlots).trim() !== "" ? Number(editedForm.maxSlots) : undefined,
+          availableSlots: String(editedForm.availableSlots).trim() !== "" ? Number(editedForm.availableSlots) : undefined,
+          displayStartDate: editedForm.displayStartDate || undefined,
+          displayEndDate: editedForm.displayEndDate || undefined,
         }),
       });
 
@@ -899,14 +1035,15 @@ export function ViewPackagesPanel() {
             <table className="min-w-full table-fixed text-sm">
               <thead>
                 <tr className="text-left border-b" style={{ color: dashboardTheme.textMuted, borderColor: dashboardTheme.border }}>
-                  <th className="w-[20%] py-3 pr-4 font-medium">Title</th>
-                  <th className="w-[12%] py-3 pr-4 font-medium">Image</th>
-                  <th className="w-[14%] py-3 pr-4 font-medium">Category</th>
+                  <th className="w-[18%] py-3 pr-4 font-medium">Title</th>
+                  <th className="w-[10%] py-3 pr-4 font-medium">Image</th>
+                  <th className="w-[12%] py-3 pr-4 font-medium">Category</th>
                   <th className="w-[8%] py-3 pr-4 font-medium">Rating</th>
-                  <th className="w-[12%] py-3 pr-4 font-medium">Price</th>
-                  <th className="w-[12%] py-3 pr-4 font-medium">Status</th>
+                  <th className="w-[10%] py-3 pr-4 font-medium">Price</th>
+                  <th className="w-[8%] py-3 pr-4 font-medium">Slots</th>
+                  <th className="w-[10%] py-3 pr-4 font-medium">Status</th>
                   <th className="w-[8%] py-3 pr-4 font-medium">Featured</th>
-                  <th className="w-[14%] py-3 pr-4 font-medium">Actions</th>
+                  <th className="w-[16%] py-3 pr-4 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -946,6 +1083,16 @@ export function ViewPackagesPanel() {
                         <td className="py-3 pr-4 align-top whitespace-nowrap" style={{ color: dashboardTheme.textDark }}>
                           {item.currency} {item.price}
                         </td>
+                        <td className="py-3 pr-4 align-top whitespace-nowrap" style={{ color: dashboardTheme.textDark }}>
+                          {item.availableSlots !== undefined ? (
+                            <span className={item.availableSlots <= 0 ? "text-red-600 font-medium" : ""}>
+                              {item.availableSlots}
+                              {item.maxSlots ? `/${item.maxSlots}` : ""}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
                         <td className="py-3 pr-4 align-top capitalize whitespace-nowrap" style={{ color: dashboardTheme.textDark }}>
                           {item.status}
                         </td>
@@ -976,7 +1123,7 @@ export function ViewPackagesPanel() {
 
                       {isEditing ? (
                         <tr className="border-b" style={{ borderColor: "#f1f5f9" }}>
-                          <td colSpan={7} className="px-0 py-4">
+                          <td colSpan={9} className="px-0 py-4">
                             <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
                               <div className="mb-3 flex items-center justify-between gap-3">
                                 <div>
@@ -1025,6 +1172,74 @@ export function ViewPackagesPanel() {
 
                               <textarea name="description" value={editedForm.description} onChange={handleEditField} className="mt-3 w-full rounded border px-3 py-2 text-sm min-h-20 bg-white" style={{ borderColor: dashboardTheme.border }} placeholder="Description" />
                               <textarea name="includes" value={editedForm.includes} onChange={handleEditField} className="mt-3 w-full rounded border px-3 py-2 text-sm min-h-16 bg-white" style={{ borderColor: dashboardTheme.border }} placeholder="Includes (comma separated)" />
+
+                              {/* Availability and Display Settings */}
+                              <div className="mt-4 border-t pt-4" style={{ borderColor: dashboardTheme.border }}>
+                                <h5 className="text-sm font-medium mb-3" style={{ color: dashboardTheme.textDark }}>
+                                  Availability & Display Settings (Optional)
+                                </h5>
+                                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                  <input
+                                    type="date"
+                                    name="availabilityStartDate"
+                                    value={editedForm.availabilityStartDate}
+                                    onChange={handleEditField}
+                                    className="rounded border px-3 py-2 text-sm bg-white"
+                                    style={{ borderColor: dashboardTheme.border }}
+                                    placeholder="Availability Start Date"
+                                  />
+                                  <input
+                                    type="date"
+                                    name="availabilityEndDate"
+                                    value={editedForm.availabilityEndDate}
+                                    onChange={handleEditField}
+                                    className="rounded border px-3 py-2 text-sm bg-white"
+                                    style={{ borderColor: dashboardTheme.border }}
+                                    placeholder="Availability End Date"
+                                  />
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    name="maxSlots"
+                                    value={editedForm.maxSlots}
+                                    onChange={handleEditField}
+                                    className="rounded border px-3 py-2 text-sm bg-white"
+                                    style={{ borderColor: dashboardTheme.border }}
+                                    placeholder="Max Slots"
+                                  />
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    name="availableSlots"
+                                    value={editedForm.availableSlots}
+                                    onChange={handleEditField}
+                                    className="rounded border px-3 py-2 text-sm bg-white"
+                                    style={{ borderColor: dashboardTheme.border }}
+                                    placeholder="Available Slots"
+                                  />
+                                  <input
+                                    type="date"
+                                    name="displayStartDate"
+                                    value={editedForm.displayStartDate}
+                                    onChange={handleEditField}
+                                    className="rounded border px-3 py-2 text-sm bg-white"
+                                    style={{ borderColor: dashboardTheme.border }}
+                                    placeholder="Display Start Date"
+                                  />
+                                  <input
+                                    type="date"
+                                    name="displayEndDate"
+                                    value={editedForm.displayEndDate}
+                                    onChange={handleEditField}
+                                    className="rounded border px-3 py-2 text-sm bg-white"
+                                    style={{ borderColor: dashboardTheme.border }}
+                                    placeholder="Display End Date"
+                                  />
+                                </div>
+                                <p className="text-xs mt-2" style={{ color: dashboardTheme.textMuted }}>
+                                  Leave fields empty for packages that should always be available/displayed. Display dates control when packages appear on the frontend.
+                                </p>
+                              </div>
 
                               <div className="mt-3">
                                 <ImageUploadManager

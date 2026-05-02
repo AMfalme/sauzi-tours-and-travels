@@ -41,6 +41,13 @@ export type CreatePackageInput = {
   images: string[];
   description: string;
   includes: string[];
+  // Availability and display fields (all optional)
+  availabilityStartDate?: string;
+  availabilityEndDate?: string;
+  maxSlots?: number;
+  availableSlots?: number;
+  displayStartDate?: string;
+  displayEndDate?: string;
 };
 
 export type PackageRecord = CreatePackageInput & {
@@ -48,6 +55,37 @@ export type PackageRecord = CreatePackageInput & {
   createdAt: string | null;
   updatedAt: string | null;
 };
+
+// Utility function to check if a package should be displayed on frontend
+export function isPackageDisplayable(pkg: PackageRecord): boolean {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+  // Check display date range (if specified)
+  if (pkg.displayStartDate && pkg.displayStartDate > today) {
+    return false; // Display hasn't started yet
+  }
+
+  if (pkg.displayEndDate && pkg.displayEndDate < today) {
+    return false; // Display period has ended
+  }
+
+  // Check availability date range (if specified)
+  if (pkg.availabilityStartDate && pkg.availabilityStartDate > today) {
+    return false; // Not available for booking yet
+  }
+
+  if (pkg.availabilityEndDate && pkg.availabilityEndDate < today) {
+    return false; // No longer available for booking
+  }
+
+  // Check if slots are available (if specified)
+  if (pkg.availableSlots !== undefined && pkg.availableSlots <= 0) {
+    return false; // No slots available
+  }
+
+  return true;
+}
 
 export type UpdatePackageInput = Partial<CreatePackageInput>;
 
@@ -81,6 +119,13 @@ function mapPackage(id: string, data: Record<string, unknown>): PackageRecord {
     images: Array.isArray(data.images) ? (data.images as string[]) : [],
     description: (data.description as string) ?? "",
     includes: Array.isArray(data.includes) ? (data.includes as string[]) : [],
+    // Availability and display fields
+    availabilityStartDate: (data.availabilityStartDate as string) || undefined,
+    availabilityEndDate: (data.availabilityEndDate as string) || undefined,
+    maxSlots: typeof data.maxSlots === "number" ? data.maxSlots : undefined,
+    availableSlots: typeof data.availableSlots === "number" ? data.availableSlots : undefined,
+    displayStartDate: (data.displayStartDate as string) || undefined,
+    displayEndDate: (data.displayEndDate as string) || undefined,
     createdAt: toIso(data.createdAt),
     updatedAt: toIso(data.updatedAt),
   };
