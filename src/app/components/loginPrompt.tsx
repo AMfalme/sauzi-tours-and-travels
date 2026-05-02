@@ -1,15 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 // import { useAuth } from "./providers/auth-provider"; // adjust path
 // import LoginWithGoogleButton from "@/components/login-google";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/app/lib/firebase";
 
 export default function LoginSlideModal() {
   const [show, setShow] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 //   const { user } = useAuth(); // get logged-in user
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+        setShow(false);
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+
+    return () => unsub();
+  }, []);
 
 //   useEffect(() => {
 //     if (!user) {
@@ -26,6 +42,8 @@ export default function LoginSlideModal() {
   const handleClose = () => setShow(false);
 
 //   if (user) return null; // don't show if already logged in
+
+  if (isLoggedIn) return null;
 
   return (
     <AnimatePresence>
