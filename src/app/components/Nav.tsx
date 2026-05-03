@@ -61,7 +61,7 @@ export default function Navbar() {
           {notification}
         </div>
       )}
-      <nav className="relative px-4 py-4 flex justify-between items-center bg-white">      
+      <nav className="relative px-4 py-4 flex justify-between items-center bg-primary">      
         <Link href="/" className="navbar-brand p-0">
           <Image
             className="img-fluid"
@@ -175,10 +175,10 @@ export default function Navbar() {
           aria-hidden="true"
         ></div>
         <nav
-          className={`absolute top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-white border-r overflow-y-auto transition-transform duration-300 ease-out ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`absolute top-0 left-0 right-0 flex flex-col min-h-[60vh] max-h-full py-6 px-6 bg-white border-b overflow-y-auto transition-transform duration-500 ease-out ${mobileMenuOpen ? "translate-y-0" : "-translate-y-full"}`}
         >
-          <div className="flex items-center mb-8">
-            <Link className="mr-auto text-3xl font-bold leading-none" href="/">
+          <div className="flex items-center justify-between mb-6">
+            <Link className="text-2xl font-bold leading-none" href="/">
               <Image
                 className="img-fluid"
                 src="/images/sauzi-logo-img.png"
@@ -193,66 +193,66 @@ export default function Navbar() {
               aria-label="Close menu"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <svg className="h-6 w-6 text-gray-400 cursor-pointer hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-6 w-6 text-gray-500 hover:text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
           </div>
-          <div>
-            <ul>
-              <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/" onClick={() => setMobileMenuOpen(false)}>
+          <div className="mb-8">
+            <ul className="space-y-2">
+              <li>
+                <Link className="block p-4 text-sm font-semibold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/" onClick={() => setMobileMenuOpen(false)}>
                   HOME
                 </Link>
               </li>
-              <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/about" onClick={() => setMobileMenuOpen(false)}>
+              <li>
+                <Link className="block p-4 text-sm font-semibold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/about" onClick={() => setMobileMenuOpen(false)}>
                   ABOUT US
                 </Link>
               </li>
-              <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/tours" onClick={() => setMobileMenuOpen(false)}>
+              <li>
+                <Link className="block p-4 text-sm font-semibold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/tours" onClick={() => setMobileMenuOpen(false)}>
                   TOURS
                 </Link>
               </li>
-              <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/destinations" onClick={() => setMobileMenuOpen(false)}>
+              <li>
+                <Link className="block p-4 text-sm font-semibold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/destinations" onClick={() => setMobileMenuOpen(false)}>
                   DESTINATIONS
                 </Link>
               </li>
-              <li className="mb-1">
-                <Link className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/contact" onClick={() => setMobileMenuOpen(false)}>
-                  CONTACT us
+              <li>
+                <Link className="block p-4 text-sm font-semibold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded uppercase no-underline" href="/contact" onClick={() => setMobileMenuOpen(false)}>
+                  CONTACT
                 </Link>
               </li>
             </ul>
           </div>
-          <div className="mt-auto">
-            <div className="pt-6">
+          <div className="mt-auto pt-4 border-t border-gray-200">
+            <div className="space-y-3">
               {user ? (
                 <>
-                  <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                  <Link className="block px-4 py-3 text-center text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full uppercase no-underline" href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                     DASHBOARD
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-rose-600 hover:bg-rose-700 rounded-full uppercase"
+                    className="w-full px-4 py-3 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-full uppercase"
                   >
                     LOGOUT
                   </button>
                 </>
               ) : (
                 <>
-                  <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-gray-50 hover:bg-gray-100 rounded-full uppercase no-underline" href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Link className="block px-4 py-3 text-center text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full uppercase no-underline" href="/login" onClick={() => setMobileMenuOpen(false)}>
                     SIGN IN
                   </Link>
-                  <Link className="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-blue-600 hover:bg-blue-700 rounded-full uppercase no-underline" href="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Link className="block px-4 py-3 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-full uppercase no-underline" href="/register" onClick={() => setMobileMenuOpen(false)}>
                     SIGN UP
                   </Link>
                 </>
               )}
             </div>
-            <p className="my-4 text-xs text-center text-gray-400">
+            <p className="mt-6 text-xs text-center text-gray-400">
               <span>Copyright © 2023</span>
             </p>
           </div>

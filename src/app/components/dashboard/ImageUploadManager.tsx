@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { dashboardTheme } from "@/app/components/dashboard/theme";
 
 export type ImageUploadManagerProps = {
@@ -97,9 +98,11 @@ export function ImageUploadManager({
               style={{ borderColor: dashboardTheme.border }}
             >
               <div className="h-28 w-full bg-slate-100">
-                <img
+                
+                <Image
                   src={imageUrl}
                   alt={`Package preview ${index + 1}`}
+                  fill
                   className="h-full w-full object-cover"
                 />
               </div>

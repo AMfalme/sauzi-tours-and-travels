@@ -25,6 +25,22 @@ import {
 } from "@/app/components/dashboard/AdminPanels";
 import { dashboardTheme } from "@/app/components/dashboard/theme";
 
+type TourRequestRecord = {
+  id: string;
+  destination: string;
+  date: string;
+  guests: string;
+  childrenAges: string;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  source: string;
+  createdAt?: string | null;
+};
+
+type DateInput = string | number | null | undefined | { seconds: number } | { toDate: () => Date };
+
 const baseNav: DashboardNavItem[] = [{ key: "overview", label: "Dashboard", icon: "□" }];
 const adminNav: DashboardNavItem[] = [
   { key: "tour-requests", label: "Tour Requests", icon: "◇" },
@@ -43,13 +59,13 @@ export default function DashboardPage() {
 
   const [activePanel, setActivePanel] = useState<DashboardNavKey>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [requestFilter, setRequestFilter] = useState<"all" | "pending" | "confirmed">("all");
+  // const [requestFilter, setRequestFilter] = useState<"all" | "pending" | "confirmed">("all");
 
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [bookingsError, setBookingsError] = useState("");
 
-  const [tourRequests, setTourRequests] = useState<any[]>([]);
+  const [tourRequests, setTourRequests] = useState<TourRequestRecord[]>([]);
   const [tourRequestsLoading, setTourRequestsLoading] = useState(false);
   const [tourRequestsError, setTourRequestsError] = useState("");
 
@@ -106,7 +122,7 @@ export default function DashboardPage() {
       try {
         const tourRequestsResponse = await fetch("/api/tour-requests");
         const tourRequestsData = (await tourRequestsResponse.json()) as {
-          requests?: any[];
+          requests?: TourRequestRecord[];
           message?: string;
         };
 
@@ -140,7 +156,6 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     const pendingBookings = bookings.filter((item) => item.status === "pending").length;
     const confirmedBookings = bookings.filter((item) => item.status === "confirmed").length;
-    const newRequests = tourRequests.filter((item) => item.status === "new").length;
 
     return [
       {
@@ -178,21 +193,21 @@ export default function DashboardPage() {
 
   const navigation = user?.role === "admin" ? [...baseNav, ...adminNav] : baseNav;
 
- const formatDate = (value: any) => {
+ const formatDate = (value: DateInput) => {
   if (!value) return "-";
 
   // Firestore Timestamp object
-  if (typeof value === "object" && "seconds" in value) {
+  if (typeof value === "object" && value !== null && "seconds" in value) {
     return new Date(value.seconds * 1000).toLocaleDateString();
   }
 
   // Firestore Timestamp class instance
-  if (typeof value?.toDate === "function") {
+  if (typeof value === "object" && value !== null && typeof value.toDate === "function") {
     return value.toDate().toLocaleDateString();
   }
 
   // Normal string/date
-  const parsed = new Date(value);
+  const parsed = new Date(value as string | number);
 
   if (Number.isNaN(parsed.getTime())) return "-";
 

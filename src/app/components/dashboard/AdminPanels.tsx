@@ -8,6 +8,7 @@ import {
   type PackageRecord,
   type PackageStatus,
 } from "@/app/lib/packages";
+import Image from "next/image";
 import { dashboardTheme } from "@/app/components/dashboard/theme";
 import { ImageUploadManager, uploadImagesToCloudinary } from "@/app/components/dashboard/ImageUploadManager";
 
@@ -22,7 +23,15 @@ type TourRequestRecord = {
   phone: string;
   status: string;
   source: string;
-  createdAt: any;
+  createdAt?: string | null;
+};
+
+type RequestsPanelProps = {
+  loading: boolean;
+  error: string;
+  bookings: BookingRecord[];
+  filter?: "all" | "pending" | "confirmed";
+  formatDate: (date: string | null | undefined) => string;
 };
 
 type TourRequestsPanelProps = {
@@ -1064,9 +1073,10 @@ export function ViewPackagesPanel() {
                         <td className="py-3 pr-4 align-top">
                           {item.images && item.images.length > 0 ? (
                             <div className="w-16 h-12 rounded border overflow-hidden" style={{ borderColor: dashboardTheme.border }}>
-                              <img
+                              <Image
                                 src={item.images[0]}
                                 alt="Package thumbnail"
+                                fill
                                 className="w-full h-full object-cover"
                               />
                             </div>
